@@ -49,8 +49,6 @@ class RecipesViewModel @ViewModelInject constructor(
     var backOnline = false
 
 
-
-
     //the type of that variable will be  Flow<MealAndDietType> and we use that to read the datasTORE REPO AND USE the values to display then inside the queries and perfomr later the query. when press the fab select the chip and apply
     //lo que pasa aqui es que si nos fijamos readMealAndDietType es de tipo Flow<MealAndDietType>, que actua como una especie de live data y puede ser observable desde las activity o fragments
     val readMealAndDietType = dataStoreRepository.readMealAndDietType
@@ -63,8 +61,8 @@ class RecipesViewModel @ViewModelInject constructor(
      * con esto estamos recogiendo un flow del datarepository y entonces aui lo convertimos en un livedata
      * que podra ser observado.
      */
-    val readBackOnline = dataStoreRepository.readBackOnline.asLiveData() //convertimos el flow en un livedata observable. Fijste que cuadno hemos trabajado ocn SttteFlow no lo hemos hecho
-
+    val readBackOnline =
+        dataStoreRepository.readBackOnline.asLiveData() //convertimos el flow en un livedata observable. Fijste que cuadno hemos trabajado ocn SttteFlow no lo hemos hecho
 
 
     /**Fijate que aqui no vamos del viremodel a un repo y a la datastore. Pq esta data sotre hace como de repo tamien por eso se llama datastoreRepo*/
@@ -79,7 +77,17 @@ class RecipesViewModel @ViewModelInject constructor(
             dataStoreRepository.saveBackOnline(backOnline)
         }
 
+    fun saveMeatFishVegyType(
+        meatType: String, meatTypeId: Int, vegetableType: String, vegetableTypeId: Int,
+        fishType: String, fishTypeId: Int
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            dataStoreRepository.saveMeatVegyFishOtherType(meatType, meatTypeId, vegetableType,
+                vegetableTypeId, fishType, fishTypeId)
+        }
 
+
+    }
 
 
     /**
@@ -92,7 +100,8 @@ class RecipesViewModel @ViewModelInject constructor(
          * the datasource
          * el colelct te recoge este dato del flow que es un MealAndDietType*/
         viewModelScope.launch {
-            readMealAndDietType.collect { value -> /**Hasta que no se coleccionan los datos no se vuelve a emitir uno. Es decir el flow se queda suspendido epseranod a que su dato emitido sea coleecioando*/
+            readMealAndDietType.collect { value ->
+                /**Hasta que no se coleccionan los datos no se vuelve a emitir uno. Es decir el flow se queda suspendido epseranod a que su dato emitido sea coleecioando*/
                 //now store the value in both up variables
                 //esta d variabels van a toamr el valor de la datastore preference repo directametne
                 //y ahora vamos a coger y usar esas variables en el hasmap del query
@@ -104,9 +113,9 @@ class RecipesViewModel @ViewModelInject constructor(
         }
 
 
-
         //asociate the [key] with its value // all of them are in the query string http...
-        queries[QUERY_NUMBER] = DEFAULT_RECIPES_NUMBER  //this is the number of recipes we will get from the request
+        queries[QUERY_NUMBER] =
+            DEFAULT_RECIPES_NUMBER  //this is the number of recipes we will get from the request
         queries[QUERY_API_KEY] = API_KEY
         //her ewe will get the new values for the endpoints and if there is no data inside that variable we will perform a default value because we specicy it in the .map inside the datastore rEPOSITORY
         queries[QUERY_TYPE] = mealType
@@ -117,7 +126,7 @@ class RecipesViewModel @ViewModelInject constructor(
         return queries
     }
 
-    fun applySearchQuery(searchQuery: String): HashMap<String, String>{
+    fun applySearchQuery(searchQuery: String): HashMap<String, String> {
         val queries: HashMap<String, String> = HashMap()
         //specifie each and every query
         queries[QUERY_SEARCH] = searchQuery //here we had to ad a new constant
@@ -133,8 +142,9 @@ class RecipesViewModel @ViewModelInject constructor(
 
 
     }
+
     /**Query para hacer la búsqueda personalizada*/
-    fun applyPersonalizedRecipeQuery(): HashMap<String, String>{
+    fun applyPersonalizedRecipeQuery(): HashMap<String, String> {
         val query: HashMap<String, String> = HashMap()
 
         viewModelScope.launch {
@@ -142,7 +152,7 @@ class RecipesViewModel @ViewModelInject constructor(
                 meatType = value.selectedMeatType
                 vegetablType = value.selectedVegyType
                 fishType = value.selectedFishType
-                otherIngredientsType = value.selectedOtherIngrType
+
             }
         }
 
@@ -163,13 +173,13 @@ class RecipesViewModel @ViewModelInject constructor(
      * then display a a toasmessge seing no intenet coneection
      */
 
-    fun showNetworkStatus(){
-        if (!networkStatus){
+    fun showNetworkStatus() {
+        if (!networkStatus) {
             Toast.makeText(getApplication(), "No internet Connection.", Toast.LENGTH_SHORT).show()
             //when we lose our internet conenction and we want to set the value of that function to tru.
             saveBackOnline(true)
-        }else if(networkStatus){
-            if (backOnline){
+        } else if (networkStatus) {
+            if (backOnline) {
                 Toast.makeText(getApplication(), "We are back online", Toast.LENGTH_SHORT).show()
                 saveBackOnline(false)
             }

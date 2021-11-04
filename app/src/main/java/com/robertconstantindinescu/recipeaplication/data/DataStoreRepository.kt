@@ -51,8 +51,7 @@ class DataStoreRepository @Inject constructor(@ApplicationContext private val co
         val selectedVegetableTypeId = preferencesKey<Int>(Constants.VEGETABLE_TYPE_ID)
         val selectedFishType = preferencesKey<String>(Constants.PREFERENCES_FISH_TYPE)
         val selectedFishTypeId = preferencesKey<Int>(Constants.FISH_TYPE_ID)
-        val selectedOtherIngredientType = preferencesKey<String>(Constants.PREFERENCES_OTHER_INGREDIENT_TYPE)
-        val selectedOtherIngredientTypeId = preferencesKey<Int>(Constants.OTHER_INGREDIENT_TYPE_ID)
+
 
 
         /**
@@ -89,7 +88,7 @@ class DataStoreRepository @Inject constructor(@ApplicationContext private val co
 
     suspend fun saveMeatVegyFishOtherType(
         meatType: String, meatTypeId: Int, vegetableType: String, vegetableTypeId:Int,
-        fishType:String, fishTypeId: Int, otherIngrType: String, otherIngrTypeId: Int
+        fishType:String, fishTypeId: Int
     ){
         dataStore.edit { preferences ->
             preferences[PreferenceKeys.selectedMeatType] = meatType
@@ -98,8 +97,7 @@ class DataStoreRepository @Inject constructor(@ApplicationContext private val co
             preferences[PreferenceKeys.selectedVegetableTypeId] = vegetableTypeId
             preferences[PreferenceKeys.selectedFishType] = fishType
             preferences[PreferenceKeys.selectedFishTypeId] = fishTypeId
-            preferences[PreferenceKeys.selectedOtherIngredientType] = otherIngrType
-            preferences[PreferenceKeys.selectedOtherIngredientTypeId] = otherIngrTypeId
+
 
 
         }
@@ -165,8 +163,7 @@ class DataStoreRepository @Inject constructor(@ApplicationContext private val co
             val selectedVegyTypeId = preferences[PreferenceKeys.selectedVegetableTypeId] ?: 0
             val selectedFishType = preferences[PreferenceKeys.selectedFishType]?: Constants.DEFAULT_FISH_TYPE
             val selectedFishTypeId = preferences[PreferenceKeys.selectedFishTypeId]?: 0
-            val selectedOtherIngrType = preferences[PreferenceKeys.selectedOtherIngredientType] ?: Constants.DEFAULT_OTHER_INGREDIENT_TYPE
-            val selectedOtherIngrTypeId = preferences[PreferenceKeys.selectedOtherIngredientTypeId] ?: 0
+
 
             MeatVegyFishOtherType(
                 selectedMeatType,
@@ -174,9 +171,7 @@ class DataStoreRepository @Inject constructor(@ApplicationContext private val co
                 selectedVegyType,
                 selectedVegyTypeId,
                 selectedFishType,
-                selectedFishTypeId,
-                selectedOtherIngrType,
-                selectedOtherIngrTypeId
+                selectedFishTypeId
             )
 
 
@@ -218,8 +213,6 @@ data class MeatVegyFishOtherType(
     val selectedVegyType: String,
     val selectedVegyTypeId: Int,
     val selectedFishType: String,
-    val selectedFishTypeId: Int,
-    val selectedOtherIngrType: String,
-    val selectedOtherIngrTypeId: Int,
+    val selectedFishTypeId: Int
 
     )
