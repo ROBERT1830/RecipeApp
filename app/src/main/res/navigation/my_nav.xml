@@ -35,9 +35,6 @@
         android:name="com.robertconstantindinescu.recipeaplication.ui.fragments.personalizedRcipe.PersonalizedFoodRecipeFragment"
         android:label="Food Joke"
         tools:layout="@layout/fragment_personalized_recipe" >
-        <action
-            android:id="@+id/action_foodJokeFragment_to_ingredientsBottomSheet"
-            app:destination="@id/ingredientsBottomSheet" />
         <argument
             android:name="backFromIngredientsBottomSheet"
             app:argType="boolean"
@@ -61,13 +58,4 @@
             android:name="result"
             app:argType="com.robertconstantindinescu.recipeaplication.models.Result" />
     </activity>
-    <fragment
-        android:id="@+id/ingredientsBottomSheet"
-        android:name="com.robertconstantindinescu.recipeaplication.ui.fragments.personalizedRcipe.IngredientsBottomSheet"
-        android:label="fragment_ingredients_bottom_sheet"
-        tools:layout="@layout/fragment_ingredients_bottom_sheet" >
-        <action
-            android:id="@+id/action_ingredientsBottomSheet_to_foodJokeFragment"
-            app:destination="@id/foodJokeFragment" />
-    </fragment>
 </navigation>

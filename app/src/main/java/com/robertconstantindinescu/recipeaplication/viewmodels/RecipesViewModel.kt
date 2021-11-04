@@ -150,13 +150,17 @@ class RecipesViewModel @ViewModelInject constructor(
         viewModelScope.launch {
             readMeatVegyFishOtherType.collect { value ->
                 meatType = value.selectedMeatType
+                if (meatType == "nothing") meatType = ""
                 vegetablType = value.selectedVegyType
+                if (vegetablType == "nothing") vegetablType = ""
                 fishType = value.selectedFishType
+                if (fishType == "nothing") fishType = ""
 
             }
         }
 
-        var parameter: String = "${meatType},+${vegetablType},+${fishType},+${otherIngredientsType}"
+
+        var parameter: String = "${meatType},+${vegetablType},+${fishType}"
 
         query[Constants.QUERY_INGREDIENTS] = parameter
         query[QUERY_NUMBER] = DEFAULT_RECIPES_NUMBER

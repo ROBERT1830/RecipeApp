@@ -20,6 +20,7 @@ import com.robertconstantindinescu.recipeaplication.R
 import com.robertconstantindinescu.recipeaplication.adapters.PersonalizedFoodRecipeAdapter
 import com.robertconstantindinescu.recipeaplication.databinding.FragmentPersonalizedRecipeBinding
 import com.robertconstantindinescu.recipeaplication.ui.fragments.recipes.RecipesFragmentArgs
+import com.robertconstantindinescu.recipeaplication.util.Constants
 
 import com.robertconstantindinescu.recipeaplication.util.NetworkListener
 import com.robertconstantindinescu.recipeaplication.util.NetworkResult
@@ -27,15 +28,26 @@ import com.robertconstantindinescu.recipeaplication.util.observeOnce
 import com.robertconstantindinescu.recipeaplication.viewmodels.MainViewModel
 import com.robertconstantindinescu.recipeaplication.viewmodels.RecipesViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.android.synthetic.main.fragment_ingredients_bottom_sheet.view.*
 
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import java.lang.Exception
+import java.util.*
 
 @AndroidEntryPoint
 class PersonalizedFoodRecipeFragment : Fragment() {
 
 
-    private val args by navArgs<PersonalizedFoodRecipeFragmentArgs>()
+    /**Variables para almacenar los valores de los chips*/
+    private var meatTypeChip = Constants.DEFAULT_MEAT_TYPE
+    private var meatTypeChipId = 0
+    private var vegyTypeChip = Constants.DEFAULT_VEGETABLE_TYPE
+    private var vegyTypeChipId = 0
+    private var fishTypeChip = Constants.DEFAULT_FISH_TYPE
+    private var fishTypeChipId = 0
+
+    private var fromFab = false
 
     private var _binding: FragmentPersonalizedRecipeBinding? = null
     private val binding get() = _binding!!
@@ -93,20 +105,92 @@ class PersonalizedFoodRecipeFragment : Fragment() {
             networklistener.checkNetworkAvailability(requireContext()).collect { status ->
                 recipesViewModel.networkStatus = status
                 recipesViewModel.showNetworkStatus()
-                readDataBase()
+                requestApiData()
 
             }
         }
 
+        /**Leer el dataStore y extraemos los datos de los diferentes tipos de ingredientes. Realmente
+         * obtendremos un objeto que hemos creado en el datastore. Lo obtenemos a modoo de flow,
+         * pero aqui lo convertimos ne livedata para ser observado*/
+        recipesViewModel.readMeatVegyFishOtherType.asLiveData().observe(viewLifecycleOwner, androidx.lifecycle.Observer { value ->
+            /**Nos guardamos el texto de cada chip*/
+            meatTypeChip = value.selectedMeatType
+            fishTypeChip = value.selectedFishType
+            vegyTypeChip = value.selectedVegyType
+
+            /**Actualizamos los chip con los valores que ha seleccionado el usuario y los persistimos
+             * en dataStore. Pasamos el id y el chip group del chip seleccioando*/
+
+            updateChip(value.selectedMeatTypeId, binding.meatTypeChipGroup)
+            updateChip(value.selectedFishTypeId, binding.fishTypeChipGroup)
+            updateChip(value.selectedVegyTypeId, binding.vegyTypeChipGroup)
+
+
+        })
+
+
+        binding.meatTypeChipGroup.setOnCheckedChangeListener { chipGroup, selectedChipId ->
+            /**Nos guardamos el texto e id del chip seleccionado del grupo correspondiente*/
+            val chip = chipGroup.findViewById<Chip>(selectedChipId)
+            val selectedChipTxt = chip.text.toString().lowercase(Locale.ROOT)
+
+            /**Apuntamos a esos valores ocn las variables globales*/
+            meatTypeChip = selectedChipTxt
+            meatTypeChipId = selectedChipId
+
+
+
+        }
+
+        binding.fishTypeChipGroup.setOnCheckedChangeListener { chipGroup, selectedChipId ->
+            /**Nos guardamos el texto e id del chip seleccionado del grupo correspondiente*/
+            val chip = chipGroup.findViewById<Chip>(selectedChipId)
+            val selectedChipTxt = chip.text.toString().lowercase(Locale.ROOT)
+
+            /**Apuntamos a esos valores ocn las variables globales*/
+            fishTypeChip = selectedChipTxt
+            fishTypeChipId = selectedChipId
+        }
+        binding.vegyTypeChipGroup.setOnCheckedChangeListener { chipGroup, selectedChipId ->
+            /**Nos guardamos el texto e id del chip seleccionado del grupo correspondiente*/
+            val chip = chipGroup.findViewById<Chip>(selectedChipId)
+            val selectedChipTxt = chip.text.toString().lowercase(Locale.ROOT)
+
+            /**Apuntamos a esos valores ocn las variables globales*/
+            vegyTypeChip = selectedChipTxt
+            vegyTypeChipId = selectedChipId
+        }
+        /**Cuando pulsamos el botón fab, se guarda en dataStore los valores seleccionados de todos
+         * los chips.*/
         binding.fabPersonalizeRecipe.setOnClickListener {
-            if(recipesViewModel.networkStatus){
-                findNavController().navigate(R.id.action_foodJokeFragment_to_ingredientsBottomSheet) // con el controlador navegamos y le ponemos la accion que hemos indicado con la flecha en el my_nav.
-            }else{
-                recipesViewModel.showNetworkStatus()
-            }
+            recipesViewModel.saveMeatFishVegyType(meatTypeChip, meatTypeChipId, vegyTypeChip,
+                vegyTypeChipId, fishTypeChip, fishTypeChipId)
+            requestApiData()
+            fromFab = false
+
         }
+
+
+
+
+
+
         return binding.root
     }
+
+    private fun updateChip(chipId: Int, chipGroup: ChipGroup) {
+        //our chip id will not be 0 if we hav emade a differnte selecion from the first one nd saved the data in the datastore
+        if (chipId != 0){
+            try {
+                chipGroup.findViewById<Chip>(chipId).isChecked = true
+
+            }catch (e: Exception){
+                Log.d("RecipesBottomSheet", e.message.toString())
+            }
+        }
+    }
+
 
 
 
@@ -122,10 +206,11 @@ class PersonalizedFoodRecipeFragment : Fragment() {
             mainViewModel.readPersonalizedRecipes.observeOnce(
                 viewLifecycleOwner,
                 Observer { database ->
-                    if (database.isNotEmpty() && !args.backFromIngredientsBottomSheet) {
+                    if (database.isNotEmpty()) {
                         mAdapter.setData(database[0].personalizedRecipe)
                     } else {
                         requestApiData()
+
                     }
 
                 })
