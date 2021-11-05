@@ -17,6 +17,7 @@ import com.robertconstantindinescu.recipeaplication.util.Constants.Companion.QUE
 import com.robertconstantindinescu.recipeaplication.util.Constants.Companion.QUERY_API_KEY
 import com.robertconstantindinescu.recipeaplication.util.Constants.Companion.QUERY_DIET
 import com.robertconstantindinescu.recipeaplication.util.Constants.Companion.QUERY_FILL_INGREDIENTS
+import com.robertconstantindinescu.recipeaplication.util.Constants.Companion.QUERY_INFORMATION
 import com.robertconstantindinescu.recipeaplication.util.Constants.Companion.QUERY_NUMBER
 import com.robertconstantindinescu.recipeaplication.util.Constants.Companion.QUERY_SEARCH
 import com.robertconstantindinescu.recipeaplication.util.Constants.Companion.QUERY_TYPE
@@ -124,6 +125,25 @@ class RecipesViewModel @ViewModelInject constructor(
         queries[QUERY_FILL_INGREDIENTS] = "true"
 
         return queries
+    }
+
+    fun applyQueryById(): HashMap<String, String>{
+        val queries: HashMap<String, String> = HashMap()
+        viewModelScope.launch {
+            readMeatVegyFishOtherType.collect { value ->
+                meatType = value.selectedMeatType
+                vegetablType = value.selectedVegyType
+                fishType = value.selectedFishType
+
+            }
+        }
+        queries["includeNutrition"] = "false"
+        queries[QUERY_API_KEY] = API_KEY
+
+        return queries
+
+//       val  searchByIdQuery = "${recipeId}/information?includeNutrition=false&apiKey=${API_KEY}"
+//        return searchByIdQuery
     }
 
     fun applySearchQuery(searchQuery: String): HashMap<String, String> {

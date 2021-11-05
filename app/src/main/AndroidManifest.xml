@@ -16,10 +16,13 @@
         android:theme="@style/Theme.RecipeAplication"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".ui.DetailsActivity"
-            android:label="Details"
-            android:theme="@style/DetailsActivityStyle"
+            android:name=".ui.fragments.personalizedRcipe.PersonalizedRecipeDetails"
             android:exported="false" />
+        <activity
+            android:name=".ui.DetailsActivity"
+            android:exported="false"
+            android:label="Details"
+            android:theme="@style/DetailsActivityStyle" />
         <activity
             android:name=".ui.MainActivity"
             android:exported="true">

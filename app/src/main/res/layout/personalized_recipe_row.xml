@@ -11,6 +11,8 @@
     </data>
 
     <LinearLayout
+        android:id="@+id/linear_layout_personalized_recipe"
+        onPersonalizedRecipeClickListener="@{personalizedFoodRecipeItem}"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
@@ -22,6 +24,8 @@
             android:padding="10dp">
 
             <androidx.cardview.widget.CardView
+
+
                 android:layout_width="180dp"
                 android:layout_height="260dp"
                 app:cardCornerRadius="10dp"

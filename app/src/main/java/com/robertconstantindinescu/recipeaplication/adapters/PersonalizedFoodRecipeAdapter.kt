@@ -2,8 +2,11 @@ package com.robertconstantindinescu.recipeaplication.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.robertconstantindinescu.recipeaplication.R
 import com.robertconstantindinescu.recipeaplication.databinding.FragmentPersonalizedRecipeBinding
 import com.robertconstantindinescu.recipeaplication.databinding.PersonalizedRecipeRowBinding
 import com.robertconstantindinescu.recipeaplication.databinding.RecipesRowLayoutBinding
@@ -33,6 +36,7 @@ class PersonalizedFoodRecipeAdapter :
         val currentPersonalizedFoodRecipeItem = personalizedRecipes[position]
         holder.bind(currentPersonalizedFoodRecipeItem)
 
+
     }
 
     override fun getItemCount(): Int {
@@ -47,6 +51,7 @@ class PersonalizedFoodRecipeAdapter :
             fun bind(personalizedRecipeItem: PersonalizedFoodRecipeItem){
                 binding.personalizedFoodRecipeItem = personalizedRecipeItem
                 binding.executePendingBindings()
+
             }
 
         companion object{
