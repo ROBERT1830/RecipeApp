@@ -2,6 +2,8 @@ package com.robertconstantindinescu.recipeaplication.data
 
 import com.robertconstantindinescu.recipeaplication.data.network.FoodRecipesApi
 import com.robertconstantindinescu.recipeaplication.models.FoodRecipe
+import com.robertconstantindinescu.recipeaplication.models.PersonalizedRecipeResult
+import com.robertconstantindinescu.recipeaplication.models.Result
 import com.robertconstantindinescu.recipeaplication.models.foodrecipepersonalized.PersonalizedFoodRecipe
 import retrofit2.Response
 import javax.inject.Inject
@@ -38,6 +40,13 @@ class RemoteDataSource @Inject constructor(
         return foodRecipesApi.getPersonalizedRecipe(personalizedQuery)
 
     }
+    suspend fun getRecipeById(recipeId: Int, queryEndPoint: Map<String, String>):
+            Response<PersonalizedRecipeResult>{
+        return foodRecipesApi.getRecipeById(recipeId, queryEndPoint)
+
+    }
+
+
 
 
 

@@ -1,9 +1,13 @@
 package com.robertconstantindinescu.recipeaplication.data.network
 
 import com.robertconstantindinescu.recipeaplication.models.FoodRecipe
+import com.robertconstantindinescu.recipeaplication.models.PersonalizedRecipeResult
+import com.robertconstantindinescu.recipeaplication.models.Result
 import com.robertconstantindinescu.recipeaplication.models.foodrecipepersonalized.PersonalizedFoodRecipe
 import retrofit2.Response
 import retrofit2.http.GET
+import retrofit2.http.Path
+import retrofit2.http.Query
 import retrofit2.http.QueryMap
 
 /**
@@ -41,6 +45,12 @@ interface FoodRecipesApi {
     suspend fun getPersonalizedRecipe(
         @QueryMap personalizedSearch: Map<String,  String>
     ):Response<PersonalizedFoodRecipe>
+
+    @GET("/recipes/{id}/information")
+    suspend fun getRecipeById(
+        @Path("id") recipeId:Int,
+        @QueryMap parameters: Map<String, String>
+    ):Response<PersonalizedRecipeResult>
 
 
 }
