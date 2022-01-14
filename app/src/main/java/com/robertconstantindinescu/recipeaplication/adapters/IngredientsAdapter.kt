@@ -26,7 +26,6 @@ class IngredientsAdapter: RecyclerView.Adapter<IngredientsAdapter.MyViewHolder>(
     }
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        //add the url and the image from the data ExtendedIngredient class
         holder.itemView.ingredient_imageView.load(BASE_IMAGE_URL + ingredientsList[position].image){
             crossfade(600)
             error(R.drawable.ic_error_placeholder)

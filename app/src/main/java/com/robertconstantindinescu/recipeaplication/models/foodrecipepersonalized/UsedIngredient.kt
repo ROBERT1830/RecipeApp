@@ -4,6 +4,9 @@ import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.android.parcel.Parcelize
 
+/**
+ * Data class que contiene informacion acerca de los ingredientes
+ */
 @Parcelize
 data class UsedIngredient(
     @SerializedName("amount")

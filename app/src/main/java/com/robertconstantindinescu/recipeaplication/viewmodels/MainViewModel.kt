@@ -38,6 +38,10 @@ will have its dependencies defined in the constructor parameters injected by Dag
 We do not need to crete a viewmodel facotry to pass the repository
  */
 
+/**
+ * Esta clase al necesitar contener Application, extiende de AndroidViewModel.
+ * Inyectamos con  @ViewModelInject el repo.
+ */
 class MainViewModel @ViewModelInject constructor(
     private val repository: Repository,
     application: Application
@@ -51,70 +55,115 @@ class MainViewModel @ViewModelInject constructor(
      * and then create a funciton to insert the data into the database.
      */
     //THIS variable is gona be used in the fragment to read the database instead of call the api each time.
-    val readRecipes: LiveData<List<RecipesEntity>> = repository.local.readRecipes().asLiveData()  //we need to convert the flow to a live data. THIS
 
+    //variable que se usa para leer los datos de las recetas almacenadas en local.
+    /*De la base de datos obtenemos un flow, pero aqui lo pasamos a un liveData.
+    * para escuchar el estado de la variable desde el fragment. */
+    val readRecipes: LiveData<List<RecipesEntity>> = repository.local.readRecipes().asLiveData()
+
+    //ídem
     val readPersonalizedRecipes: LiveData<List<PersonalizedRecipeEntity>> = repository.local.readPersonalizedRecipes().asLiveData()
 
+    //ídem
     val readFavoriteRecipes: LiveData<List<FavoritesEntity>> = repository.local.readFavoriteRecipes().asLiveData()
 
 
-
+    /**
+     * Método utilizado para insertar en la base de datos las recetas que obtenemos del api.
+     */
     private fun insertRecipes(recipesEntity: RecipesEntity) =
         //we use the dispatcher io becasue we perform operation with database
         viewModelScope.launch(Dispatchers.IO) {
+            //usamos el repo local e insertamos las recetas con la función definida en esa clase.
             repository.local.insertRecipes(recipesEntity)
         }
 
+    /**
+     * Mñetodo utilizado para insertar en la base de dagos las recetas personalizadas.
+     */
     private fun insertPersonalizedRecipes(personalizedRecipes: PersonalizedRecipeEntity) =
         viewModelScope.launch(Dispatchers.IO) {
+            //ídem
             repository.local.insertPersonalizedRecipes(personalizedRecipes)
         }
 
     /**
-     * 19 room favor
+     * Método usado para insertar recetas en la tabla favoritos.
      */
-
     fun insertFavoriteRecipe(favoritesEntity: FavoritesEntity) =
         viewModelScope.launch(Dispatchers.IO) {
             repository.local.insertFavoriteRecipes(favoritesEntity)
         }
 
+    /**
+     * Méodo usado para eliminar una receta específica de favoritos.
+     */
     fun deleteFavoriteRecipe(favoritesEntity: FavoritesEntity) =
         viewModelScope.launch(Dispatchers.IO) {
             repository.local.deleteFavoriteRecipe(favoritesEntity)
         }
 
+    /**
+     * Método para eliminar todas las recetas favoritas.
+     */
     fun deleteAllFavoriteRecipes() =
         viewModelScope.launch(Dispatchers.IO) {
             repository.local.deleteAllFavoriteRecipes()
         }
 
-
-
-
     /** RETORFIT */
-    //Create the mutablelive data object
-    var recipesResponse: MutableLiveData<NetworkResult<FoodRecipe>> = MutableLiveData() //becasue we are goint to get the data from the NetWorkResult class souch succes witch can have inside a generic type we must have our mutablelivedata with NetworkResult<FoodRecipe
-    /**Search--->*/
-    var searchRecipesResponse: MutableLiveData<NetworkResult<FoodRecipe>> = MutableLiveData()
-    //create the function to get the recipes. and launc a coroutine to do the work in a background thread
-    /**Nueva variable para hacer la b´´queda personalizada*/
-    var personalizedRecipeResponse: MutableLiveData<NetworkResult<PersonalizedFoodRecipe>> = MutableLiveData()
 
+    //variable livedata que se leera desde el fragmentRecipes. Tendra toda la lsita de recetas obtenidas
+    var recipesResponse: MutableLiveData<NetworkResult<FoodRecipe>> = MutableLiveData() //becasue we are goint to get the data from the NetWorkResult class souch succes witch can have inside a generic type we must have our mutablelivedata with NetworkResult<FoodRecipe
+
+    //variable livedata que tendrá la lista de recetas obtenidas del api cuadno hacemos búsqueda por
+    //palabras.
+    var searchRecipesResponse: MutableLiveData<NetworkResult<FoodRecipe>> = MutableLiveData()
+    //variabel para observar los datos desde el fragmetn cuadno hagamos una busqueda personalizada
+    var personalizedRecipeResponse: MutableLiveData<NetworkResult<PersonalizedFoodRecipe>> = MutableLiveData()
+    //Variable que almacena un objeto PersonalizedRecipeResult cuando hacemos búsqueda por id
     var recipeResponseById: MutableLiveData<NetworkResult<PersonalizedRecipeResult>> = MutableLiveData()
 
+
     /**
-     * this coroutine when we launch this it will creates a job that handles the live of that cororutine
-     * and the live of that coroutine is bases here according to the viewmodel life.
+     * Método que devuelve las recetas a partir de la respuesta del api. Cuando lanzamos esta corrutina
+     * se crea un job que lo que hace es definir el contexto y ciclo de vida de la corrutina, de tal
+     * modo que la vida de la corrutina acabará cuando acabe la vida del vireModel.
      */
     fun getRecipes(queries: Map<String, String>) = viewModelScope.launch {
         getRecipesSafeCall(queries)
     }
 
+    /**
+     * ídem pero necesitamos pasar el Id de la receta en cuestión y el enpoint.
+     */
     fun getRecipesById(recipeId: Int, queryEndPoint: Map<String, String>) = viewModelScope.launch {
         getRecipesByIdSafeCall(recipeId,queryEndPoint )
     }
 
+    /**
+     * ídem pero para cuadno realizamos una búsqueda por palabra.
+     */
+    fun searchRecipes(searchQuery:Map<String, String> ) = viewModelScope.launch {
+        searchRecipesSafeCall(searchQuery)
+    }
+
+    /**
+     * ídem pero para cuando realizamos búsqueda personallizada.
+     */
+    fun getPersonalizedRecipe(personalizedQuery: Map<String, String>) = viewModelScope.launch {
+        getPersonalizedRecipesSafeCall(personalizedQuery)
+    }
+
+    /**
+     * En este método siempre que haya conexión a internet, realizará la petición a la bnase de datos
+     * para una receta en particular. Luego modifica el valor de recipeResponseById
+     * en función de tres estados de los datos. Estos estados se determinan en la función
+     * handleFoodRecipesIdResponse.
+     * Si no hay conexión el valor es un mensaje de error.
+     * Al ser solo una receta no se hace persistencia en la base de datos.
+     *
+     */
     private suspend fun getRecipesByIdSafeCall(recipeId: Int, queryEndPoint: Map<String, String>) {
         recipeResponseById.value = NetworkResult.Loading()
         if (hasInternerConnection()){
@@ -130,15 +179,15 @@ class MainViewModel @ViewModelInject constructor(
     }
 
 
-    /**Search--->*/
-    fun searchRecipes(searchQuery:Map<String, String> ) = viewModelScope.launch {
-        searchRecipesSafeCall(searchQuery)
-    }
-
-    fun getPersonalizedRecipe(personalizedQuery: Map<String, String>) = viewModelScope.launch {
-        getPersonalizedRecipesSafeCall(personalizedQuery)
-    }
-
+    /**
+     * Este método, si tenemos conexióna internet haremos una petición a la API
+     * Y luego cambiará el valor de la variable livedata personalizedRecipeResponse
+     * en función del estado de la respiesta del servidor.
+     * Cuadno se cambia el valor de dicha variable, inmediatamente se escucha desde la vista
+     * y pinta los datos.
+     * Pero inmediatametne este método guarda en local los datos. Para no tener que hacer peticiones
+     * seguidas a la base de datos.
+     */
     private suspend fun getPersonalizedRecipesSafeCall(personalizedQuery: Map<String, String>) {
         personalizedRecipeResponse.value = NetworkResult.Loading()
         if (hasInternerConnection()){
@@ -159,39 +208,34 @@ class MainViewModel @ViewModelInject constructor(
     }
 
 
+    /**
+     * ídem pero para recetas generales.
+     */
     private suspend fun getRecipesSafeCall(queries: Map<String, String>) {
-        //every time we call this funtion we response first with the load state data and then we we get the data we responthe either with succes o error.
         recipesResponse.value = NetworkResult.Loading()
-        //si tenemos internet we will make a request to our api. And we wil store the request response inside
-        //the recipesResponse variable
         if (hasInternerConnection()){
             try {
-
-
-                //here we will use the injected repository to get the api datare.
-                /*so because of the injection we can acces the repository and then the remote datasource
-                * because we injected the repository with the remotedasource and finally getRecipes*/
                 val response = repository.remote.getRecipes(queries) //---> WARNING: we need suspend function because getRecipes is a suspend funciton
-                //now set recipesResponse value to the value we get from the request. ya tenemos los datos alamacenado en esaa liceda de la api
-                //ahora le decimos a nuestro live data ei que tu valor va a cambiar. Pero resulat que de la request podemos obtener diferentes respuestas (dato en diferentes estados y por eso usamos la clase Networ sealed class), entre ellas como un json con error messsage entonces en funcion de como va a se esa respuesta tenemos que hacer una cosa u otr.
-                recipesResponse.value = handleFoodRecipesResponse(response) //si recordamos del Succes devuevle un Network con un tipo <T> con lo cual gracias a eso podemos igualar NetworkResult<FoodRecipe>  al tipo de dato que tenemos devuelto
-                /**Catche the data inmediatly when we receive from api. */
-                val foodRecipe = recipesResponse.value!!.data //accedes al Network que tiene almacenado y almacenas en sa varible la respuesta que es realmete un objeto de la clase FoodRecipes
-                if(foodRecipe != null){ //chek if the response is not null
-                    offlineCacheRecipes(foodRecipe) //cache the api response into the database.
+                // Succes devuevle un Network con un tipo <T> con lo cual gracias a eso podemos igualar NetworkResult<FoodRecipe>  al tipo de dato que tenemos devuelto
+                recipesResponse.value = handleFoodRecipesResponse(response)
+                //accedes al Network que tiene almacenado y almacenas en sa varible la respuesta
+                // que es realmete un objeto de la clase FoodRecipes
+                val foodRecipe = recipesResponse.value!!.data
+                if(foodRecipe != null){
+                    offlineCacheRecipes(foodRecipe)
                 }
-
-
             }catch (e: Exception){
                 recipesResponse.value = NetworkResult.Error("Recipes not found. ")
             }
-            //if has internet coneection is false that menas tha toour app dont have aacces to intener and we need to pass error emsage here
         }else{
-            //if there is an error we are seting the mutable recupesReposnse to the networkresult  error
             recipesResponse.value = NetworkResult.Error("No Internet Connection.") //here we need to pass some parameters lke the message but not the data becasue we seted to null in case of error
         }
     }
 
+    /**
+     * ídem pero no hacemos el guardado en la base de datos cuadno buscamos solo por una palabra.
+     *
+     */
     suspend private fun searchRecipesSafeCall(searchQuery: Map<String, String>) {
 
         searchRecipesResponse.value = NetworkResult.Loading()
@@ -200,16 +244,6 @@ class MainViewModel @ViewModelInject constructor(
             try {
                 val response = repository.remote.searchRecipes(searchQuery)
                 searchRecipesResponse.value = handleFoodRecipesResponse(response)
-
-
-                /**
-                 * Here we are not going to cache the data
-                 */
-                //val foodRecipe = searchRecipesResponse.value!!.data
-//                if(foodRecipe != null){ //chek if the response is not null
-//                    offlineCacheRecipes(foodRecipe) //cache the api response into the database.
-//                }
-
 
             }catch (e: Exception){
                 searchRecipesResponse.value = NetworkResult.Error("Recipes not found. ")
@@ -220,6 +254,12 @@ class MainViewModel @ViewModelInject constructor(
             searchRecipesResponse.value = NetworkResult.Error("No Internet Connection.")
         }
     }
+
+    /**
+     * este método, guarda en la base de datos las recetas personaliazdas.
+     * Para ello crea un objeto de la entidad correspondiente que tenemos en la bse de datos,
+     * a partir del objeto que pasamos.
+     */
     private fun offlineCachePersonalizedRecipes(foodRecipe: PersonalizedFoodRecipe) {
         /**Nos creamos el objeto de nuestra entidad*/
         val personalizedFoodEntity = PersonalizedRecipeEntity(foodRecipe)
@@ -227,105 +267,88 @@ class MainViewModel @ViewModelInject constructor(
 
 
     }
+
+    /**
+     * ídem pero para recetas generales.
+     */
     private fun offlineCacheRecipes(foodRecipe: FoodRecipe) {
-        //aqui te vas a crear tu propio objeto de la clase ReipesEntity que contiene dentro la clase FoodRecipe con la lista de result
-        //y le meteras los resulatdos pq le pasas por constructor un objeto de la clase FoodRecipe
-        /**
-         * in order to insert the data into the database we need to convert the FoodRecipe from the api
-         * into an database entity in that case recipesEntity
-         */
-        val recipesEntity = RecipesEntity(foodRecipe) //entonces esta variable contiene un objeto de la clase RecipeseNTTITY que contiene dentro un objeto de tipo FooDrecipe que a asu vez tiene una lista de Result
+        //aqui te vas a crear tu propio objeto de la clase ReipesEntity que contiene dentro la
+        // clase FoodRecipe con la lista de result y le meteras los resulatdos pq le pasas por
+        // constructor un objeto de la clase FoodRecipe
+
+        val recipesEntity = RecipesEntity(foodRecipe)
         //ahora vamos a insertar los datos en room
         insertRecipes(recipesEntity)
     }
 
 
+
     /**
-     * this funciton will take response from out PI. and here we are going to parse the response from the api
+     * Este método, se encarga de distribuir la información que obtenemos de la api
+     * a un tipo de dato en concreto. Si obtenemos algún tipo de código de error
+     * o mensaje devolveremos un objeto NetworkResult con ell tipo de dato en cuestión.
      */
     private fun handleFoodRecipesResponse(response: Response<FoodRecipe>): NetworkResult<FoodRecipe>? {
         when{
-            //if the message that we have from the request is timeoout that means the it take to long for the api to respond to our request
-            //mensaje http
+
             response.message().toString().contains("timeout") -> {
-                return NetworkResult.Error("Timeout") //da igual si retornar este tipo de netwok con el erro pq lo hemos peusto en generico
+                return NetworkResult.Error("Timeout")
             }
             response.code() == 402 ->{
-                return NetworkResult.Error("Api key Limited. ") // becasue the pooneculaar api has a limit in tthe request
+                return NetworkResult.Error("Api key Limited. ")
             }
-            response.body()!!.results.isNullOrEmpty() ->{ //pone !! pq el body puede ser null o vacio
-                return NetworkResult.Error("Recipes not found.") //alguans veces puede apdasr que te devuevlea la query un resutlao vacoi con lo que eso signitifa que no hay resultado para los paramteros de busqeuda indicados.
-
-
+            response.body()!!.results.isNullOrEmpty() ->{
+                return NetworkResult.Error("Recipes not found.")
             }
             response.isSuccessful ->{
-                val foodRecipes = response.body() //el cuerpo de la respuesta guardamelo en esa variable
-                return  NetworkResult.Succes(foodRecipes!!) //devolvemos la respuesta almacenada en un tipo de dato en particualr. //estamos pasando data de tipo FoodRECIPE PERO EN NETWORK TU puedes alamcenar en data cualquie data pq usamos T
+                val foodRecipes = response.body()
+                return  NetworkResult.Succes(foodRecipes!!)
             }
             else -> {
-                return NetworkResult.Error(response.message()) //get the messge from the api
+                return NetworkResult.Error(response.message())
             }
         }
-        //siemrpe have to return the Network tipe daata becase the mutable live data is like this.
 
     }
     private fun handleFoodRecipesIdResponse(response: Response<PersonalizedRecipeResult>): NetworkResult<PersonalizedRecipeResult>? {
         when{
-            //if the message that we have from the request is timeoout that means the it take to long for the api to respond to our request
-            //mensaje http
             response.message().toString().contains("timeout") -> {
-                return NetworkResult.Error("Timeout") //da igual si retornar este tipo de netwok con el erro pq lo hemos peusto en generico
+                return NetworkResult.Error("Timeout")
             }
             response.code() == 402 ->{
-                return NetworkResult.Error("Api key Limited. ") // becasue the pooneculaar api has a limit in tthe request
+                return NetworkResult.Error("Api key Limited. ")
             }
-
-//            response.body()!!.isNullOrEmpty() ->{ //pone !! pq el body puede ser null o vacio
-//                 //alguans veces puede apdasr que te devuevlea la query un resutlao vacoi con lo que eso signitifa que no hay resultado para los paramteros de busqeuda indicados.
-//
-//
-//            }
             response.isSuccessful ->{
-                val foodRecipes = response.body() //el cuerpo de la respuesta guardamelo en esa variable
-                return  NetworkResult.Succes(foodRecipes!!) //devolvemos la respuesta almacenada en un tipo de dato en particualr. //estamos pasando data de tipo FoodRECIPE PERO EN NETWORK TU puedes alamcenar en data cualquie data pq usamos T
+                val foodRecipes = response.body()
+                return  NetworkResult.Succes(foodRecipes!!)
             }
             else -> {
-                return NetworkResult.Error(response.message()) //get the messge from the api
+                return NetworkResult.Error(response.message())
             }
         }
-        //siemrpe have to return the Network tipe daata becase the mutable live data is like this.
-
     }
 
     private fun handlePersonalizedFoodRecipesResponse(response: Response<PersonalizedFoodRecipe>):
             NetworkResult<PersonalizedFoodRecipe>? {
-
         when{
-            //if the message that we have from the request is timeoout that means the it take to long for the api to respond to our request
             //mensaje http
             response.message().toString().contains("timeout") -> {
-                return NetworkResult.Error("Timeout") //da igual si retornar este tipo de netwok con el erro pq lo hemos peusto en generico
+                return NetworkResult.Error("Timeout")
             }
             response.code() == 402 ->{
-                return NetworkResult.Error("Api key Limited. ") // becasue the pooneculaar api has a limit in tthe request
+                return NetworkResult.Error("Api key Limited. ")
             }
-            response.body()!!/*.results*/.isNullOrEmpty() ->{ //pone !! pq el body puede ser null o vacio
-                return NetworkResult.Error("Recipes not found.") //alguans veces puede apdasr que te devuevlea la query un resutlao vacoi con lo que eso signitifa que no hay resultado para los paramteros de busqeuda indicados.
-
-
+            response.body()!!/*.results*/.isNullOrEmpty() ->{
+                return NetworkResult.Error("Recipes not found.")
             }
             response.isSuccessful ->{
-                val foodRecipes = response.body() //el cuerpo de la respuesta guardamelo en esa variable
-                return  NetworkResult.Succes(foodRecipes!!) //devolvemos la respuesta almacenada en un tipo de dato en particualr. //estamos pasando data de tipo FoodRECIPE PERO EN NETWORK TU puedes alamcenar en data cualquie data pq usamos T
+                val foodRecipes = response.body()
+                return  NetworkResult.Succes(foodRecipes!!)
             }
             else -> {
-                return NetworkResult.Error(response.message()) //get the messge from the api
+                return NetworkResult.Error(response.message())
             }
         }
-
-
-
-
     }
 
     /**
@@ -337,18 +360,25 @@ class MainViewModel @ViewModelInject constructor(
     Monitor network connections (Wi-Fi, GPRS, UMTS, etc.)
     Send broadcast intents when network connectivity changes
      */
+    /**
+     * Esta función comprueba la conexión a internet para poder realizar la petición al servidor.
+     *
+     */
     @RequiresApi(Build.VERSION_CODES.M)
     private fun hasInternerConnection(): Boolean{
-        /*to check if the app has internet conection firts we get the application class
-        * and the getSystemService return A ConnectivityManager for handling management of network connections.*/
-        //
+        //obtengo la application class para comprobar la conexión y con getSystemService devuelvo
+        //un ConnectivityManager para gestionar la conexión.
         val connectivityManager = getApplication<Application>().getSystemService(
             Context.CONNECTIVITY_SERVICE
         )as ConnectivityManager
 
-        val activeNetwork = connectivityManager.activeNetwork ?: return false // activeNetwork--->Returns a Network (si tienes coenxion) object corresponding to the currently active default data network This will return null when there is no default network.
-        val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork) ?: return false  // lo que hace es coger e identificar la capacidad de red, es decir si hay o no capacidad de tner red con el objeto network que identifica la red y que pasamos cmo parmetro. Si con esa red de internet no tenemos capacidad de conexion devuelveme falso.
-        //se coge ee objeto networ y se usa pra ver que tipo de conexxion estamos teniendo
+        //activeNetwork nos devuelve un objeto Network o falso si no hay red.
+        val activeNetwork = connectivityManager.activeNetwork ?: return false
+        // Lo que se hace es coger e identificar la capacidad de red, es decir si hay o no capacidad de
+        // tener red con el objeto network que identifica la red y que pasamos como parmetro. Si con esa
+        // red de internet no tenemos capacidad de conexion devuelveme falso.
+        val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork) ?: return false
+        //se coge ese objeto network y se usa para ver que tipo de conexion estamos teniendo
         return when{
             capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
             capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true

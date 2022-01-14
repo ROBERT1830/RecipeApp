@@ -8,23 +8,34 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 /**
- * in this class we are going to inject the dao
- * This local datasource will contaian all the queries from our recipes because we have injected it
- * For reading the database we use a flow. but int he mainviewmodel we will change that to livedata.
+ * Esta clase es la que se comunicará con la base de datos local. Para ello necesita tener inyectado
+ * la interfaz dao.
+ * Esta clase contiene todos los métodos necesarios praa hacer inserciones y peticiones a la
+ * base de datos.
  */
 class LocalDataSource @Inject constructor(
-    private val recipesDao: RecipesDao //qui le inyectamos la interfaz pero que relamente a esta le hemos proporcionado la base de datos sore la que operar.
+    private val recipesDao: RecipesDao
 ) {
-    //here we dond need suspend
-     fun readRecipes(): Flow<List<RecipesEntity>>{ //te devulve los datos envueltos en un flow. Entonces tu cuadno te hagas el flow builder es cuadno los vas a ir sacando y emitiendo.
+
+    /**
+     * Métos que hacen una petición a la base de datos local usando el dao.
+     * La query devuelve un flow, que más tarde convertiremos en livedata en mainViewModel
+     */
+    fun readRecipes(): Flow<List<RecipesEntity>>{
         return recipesDao.readRecipes()
     }
 
+    fun readPersonalizedRecipes():Flow<List<PersonalizedRecipeEntity>>{
+        return recipesDao.readPersonalizedRecipes()
+    }
+    //leemos las recetas gurdados en la base de datos de favoritos.
+    fun readFavoriteRecipes(): Flow<List<FavoritesEntity>>{
+        return recipesDao.readFavoriteRecipes()
+    }
 
     /**
-     * create a function for inserting the recipes into the local database
-     * we will insert the entire list
-     * so inside we call inserRecipes from the dao.
+     * Los dos métodos que vienen son para insertar recetas y recetas personalizas. Cada una en su
+     * base de datos corresponiente.
      */
     suspend fun insertRecipes(recipesEntity: RecipesEntity){
         recipesDao.insertRecipes(recipesEntity)
@@ -32,23 +43,16 @@ class LocalDataSource @Inject constructor(
     suspend fun insertPersonalizedRecipes(personalizedRecipeEntity: PersonalizedRecipeEntity){
         recipesDao.insertPersonalizedRecipe(personalizedRecipeEntity)
     }
-    fun readPersonalizedRecipes():Flow<List<PersonalizedRecipeEntity>>{
-        return recipesDao.readPersonalizedRecipes()
-    }
-
-    /**
-     * 19-ROOM FAVORITES
-     */
-
-    //read favorites recipes
-    fun readFavoriteRecipes(): Flow<List<FavoritesEntity>>{ //te devulve los datos envueltos en un flow. Entonces tu cuadno te hagas el flow builder es cuadno los vas a ir sacando y emitiendo.
-        return recipesDao.readFavoriteRecipes()
-    }
 
     suspend fun insertFavoriteRecipes(favoritesEntity: FavoritesEntity){
         recipesDao.insertFavoriteRecipe(favoritesEntity)
     }
 
+
+    /**
+     * Métodos para eliminar recetas de la tabla de favoritos. Definen dos acciones posibles
+     * eliminar recetas especificas o todas las recetas de la tabla.
+     */
     suspend fun deleteFavoriteRecipe(favoritesEntity: FavoritesEntity){
         recipesDao.deleteFavoriteRecipe(favoritesEntity)
     }

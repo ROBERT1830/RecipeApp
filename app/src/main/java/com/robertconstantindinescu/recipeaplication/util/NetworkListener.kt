@@ -12,34 +12,40 @@ import kotlinx.coroutines.flow.MutableStateFlow
  *
  * ConnectivityManager: Class that answers queries about the state of network connectivity. It also notifies applications when network connectivity changes.
  */
+
+/**
+ * Esta clase la utilizamos para escuchar de forma continua la conexión de red y notificar cuando se
+ * pierde la conexión. Para ello debemos de extender de ConnectivityManager.NetworkCallback().
+ */
 class NetworkListener: ConnectivityManager.NetworkCallback() {
     //MutableStateFlow from kotlin corpoourtines. we need to specify a defaiult value
-    private val isNetworkAvailable = MutableStateFlow(false) //este es como un livedata qeu va emitiendo valores a cuadno se da un cambio.
+    //se utiliza MutableStateFlow que permanece activo en memoria y  va emitiendo valores.
+    //en este caso valores bolelanos.
+    private val isNetworkAvailable = MutableStateFlow(false)
 
     /**
-     * Create funciton  that has one parameter which is contet and return a mutableStateFlow
-     * so this function will return true or false.
+     * Esta función compruba si nuestro dispositivo tiene conexión a internet. Si tiene conexión,
+     * asignamos true a isNetworkAvailable y devolvemos su valor.
      *
-     * This funciton will check if our device has internet coneection
-     * and if it has we are going to asign true our isNetworkAvailable varieble  and then
-     * return its value
+     *
+     * @return --> devolvemos el valor de isNetworkAvailable.
      */
     fun checkNetworkAvailability(context: Context): MutableStateFlow<Boolean>{
-        //retrieve a manager to habldle conectivity service
+        //Obtemeos un ConnectivityManager para manejar los estados de conexión.
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        //we tell to the amanger to receive notifications about changes in the system default network. The callbacks will continue to be called until either the application exits or unregisterNetworkCallback(ConnectivityManager.NetworkCallback) is called
+        //hacemos que el manager reciba la notificación sobre los cambios de red en el sistema.
         connectivityManager.registerDefaultNetworkCallback(this)
         var isConnected = false
         //tell the amanger to Return an array of all Network currently tracked by the framework.
         //manager dime todas lsa formas de conexxion a als qeu ya esta conectado mi dispositivo
+        //con esto decimos: manager dime todas las formas de conexion a las que ya esta conectado mi dispositivo
         connectivityManager.allNetworks.forEach {  network ->
-            //check the connection cabability to internet of each  network that we have and check if we are online or not.
-            val networkCapability = connectivityManager.getNetworkCapabilities(network) //si hay capacidad de conectarse a esa forma de red
+            //comprobar la capacidad de conexión a internet
+            val networkCapability = connectivityManager.getNetworkCapabilities(network)
             networkCapability?.let {
-                //if there is a capability to internet connection
+                //si tenemos capacidad para conectarse a internet
                 if (it.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)){ //de esa forma de conexxion, indicame si el dispositivo obtiene coenxxion. Hazme la conexcion
-                    //Baciscally here we are checking if our device has intenet connectionand if it hs we want
-                    //to set the value of our isConected variable to true. And retun it.
+                    //seteamos el valor de la variable a true.
                     isConnected = true
                     return@forEach //devolvemos el resultado del foraech
                 }
@@ -48,14 +54,10 @@ class NetworkListener: ConnectivityManager.NetworkCallback() {
         isNetworkAvailable.value = isConnected
         return isNetworkAvailable
     }
-
-
     /**
-     * Override two funciton to manage the internet coneection
-     * this two functions will trigger when the network is available
-     * and when is lost.
+     * estos dos métodos, se van a disparar cuando el sistema detecta que hay red o no.
+     * En cada caso, devolveremos el valor de isNetworkAvailable según si hay red o no.
      */
-
     override fun onAvailable(network: Network) {
         isNetworkAvailable.value = true
     }

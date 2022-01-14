@@ -1,16 +1,15 @@
 package com.robertconstantindinescu.recipeaplication.util
 
+
+
 /**
- * this class is used to store the basic url that is gona be used by retrofit.
- * this basic url builder is gona be inside a companion object so that it can be acceced from
- * other classes.
- * Moreover, here we place all other constants inside the companion object
+ * Clase utilizada para crear constantes que suaremos con retrofit como la url base.
+ * Se utiliza un companion object par apoder acceder a estas constantes desde todos los sitios de la
+ * app.
  */
 class Constants {
     companion object{
-        /**
-         * The first two constant are the base url and the api key
-         */
+
         const val BASE_URL = "https://api.spoonacular.com"
         const val BASE_IMAGE_URL ="https://spoonacular.com/cdn/ingredients_100x100/"
         const val API_KEY = "fc9a88b126ac432786da2b6181c073d5"
@@ -35,12 +34,12 @@ class Constants {
         const val FAVORITE_RECIPES_TABLE = "favorite_recipes_table"
         const val PERSONALIZED_RECIPES_TABLE = "personalized_recipes_table"
 
-        //Bottom Sheet and oreferencs
+        //Bottom Sheet and data store preferences
         const val DEFAULT_RECIPES_NUMBER = "50"
         const val DEFAULT_MEAL_TYPE = "main course"
         const val DEFAULT_DIET_TYPE = "gluten free"
 
-        const val PREFERENCES_NAME = "foody_preferences" //this is hte namem of the datastore prefernece and under that name all other values will be store
+        const val PREFERENCES_NAME = "foody_preferences"
         const val PREFERENCES_MEAL_TYPE = "mealType"
         const val PREFERENCES_MEAL_TYPE_ID = "mealTypeId"
         const val PREFERENCES_DIET_TYPE = "dietType"

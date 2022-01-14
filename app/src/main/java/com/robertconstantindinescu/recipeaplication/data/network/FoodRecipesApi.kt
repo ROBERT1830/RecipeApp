@@ -13,24 +13,16 @@ import retrofit2.http.QueryMap
 /**
  * with this interface we are going to get out GET requests. for specific endpoints
  */
+/**
+ * Esta interfaz la usareomos para hacer las peticiones al servidor mediante el método GET.
+ * cada una de las funciones contienen los endpoints necesarios para hacer la petición.
+ * Además tienen los parámetros necesarios para hacer la petición a modo de mapa con su clave y valor
+ * Todas las funciones van a devolver un objeto Response con el modelo de datos .
+ *
+ * los objetos response son los que usamos para almacenar y devovler la respuestas http.
+ */
 interface FoodRecipesApi {
 
-    //https://api.spoonacular.com/recipes/complexSearch?number=1&apiKey=5dbcf751c6eb41ad9cd3023b93a41499&type=drink&diet=vegan&addRecipeInformation=true&fillIngredients=true
-    /**
-     * this is the url from where we get the information. We hace already defined in the GET
-     * the endpoint but we need to put the queries we need inside the funciont
-     * There are two ways of doing that
-     * 1) add one by one the parameters of the query or 2) use @QueryMap ---> this allow us to create
-     * like a hashmap that allow us to create the queries at once
-     *
-     * This function returns a FoodRecipe model class where inside is placed a list of result for each recipe
-     * We need to wrap this object FoodRecipe inside a Response class (is a class used for http response
-     * ). This is part from retrofit
-     * so we are going to add the foodrecipe clas inside that response clas and
-     *
-     * When we try to use this funciton we will specify the queries in a hasmap.
-     * The function wil use kotlin koroutines and will run in a background thread.
-     */
     @GET("/recipes/complexSearch")
     suspend fun getRecipes(
         @QueryMap queries: Map<String, String>

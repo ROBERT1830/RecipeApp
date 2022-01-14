@@ -9,24 +9,22 @@ import retrofit2.Response
 import javax.inject.Inject
 
 
+
 /**
- * This class request the data from  the api. And for that we need to inject the
- * interface FoodRecipesApi inside this class so that we can request new data from api
- * For that we are going to use dependecy injection.
- * This remotedasoruce fetch the data from the food api. And the second datasource will be a local data soruce which wil handle local databse.
- * Ofcoruse we are going to have one repository where we are going to inject those two data sources.
- *
- * Here by anotating the construcotr with @Inject  and specicfiing thi type which we wat to inject
- * hilt will search for this specific type in the module and it will search for a funtion wich return this same type
+ * Esta clase se encarga de hacer las peticiones al servidor. Para necesitamos inyectar FoodRecipesApi
+ * que realiza tal función.
+ * Annotando el constructor con @Inject, hará que hilt busque en el modulo esa dependencia. Es decir
+ * buscara una función cuyo retorno es lo que le estamos pidiento (una interfáz FoodRecipesApi).
  */
 class RemoteDataSource @Inject constructor(
-    private val foodRecipesApi: FoodRecipesApi //inyectamos la interfaz api con todas sus dependencias ya creadas
+    private val foodRecipesApi: FoodRecipesApi
 ) {
 
-    //Map is used to make different requests at hte same time.
-    /*Becasue getRecipes is s suspned function because perfom a api request
-    * this function that will call getRecipes needs to be suspend as well. And both
-    * will run in a separate thread. */
+    /**
+     * Todas estas funcoines se encargan de hacer una peticion al servidor y devolvernos una
+     * respuesta con el tipo determinado en cada caso. Todas son similares. Difiere
+     * el tipo de parametros que se pasan en función del tipo de búsqueda.
+     */
 
     suspend fun getRecipes(queries: Map<String, String>): Response<FoodRecipe>{
         return foodRecipesApi.getRecipes(queries)

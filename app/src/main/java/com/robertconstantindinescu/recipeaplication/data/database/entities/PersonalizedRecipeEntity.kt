@@ -6,6 +6,9 @@ import com.robertconstantindinescu.recipeaplication.models.foodrecipepersonalize
 import com.robertconstantindinescu.recipeaplication.ui.fragments.personalizedRcipe.PersonalizedFoodRecipeFragment
 import com.robertconstantindinescu.recipeaplication.util.Constants.Companion.PERSONALIZED_RECIPES_TABLE
 
+/**
+ * Otra clase marcada con la etiqueta @Entity.
+ */
 @Entity(tableName = PERSONALIZED_RECIPES_TABLE)
 class PersonalizedRecipeEntity(var personalizedRecipe: PersonalizedFoodRecipe) {
     @PrimaryKey(autoGenerate = false)

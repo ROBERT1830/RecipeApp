@@ -8,14 +8,22 @@ package com.robertconstantindinescu.recipeaplication.util
  *
  * This class is used to pass a repsonse from our API
  */
-sealed class NetworkResult<T>( //network admitira cualquier tipo de clase, cualquiera de las tres qeu hemos definido abajo.
-    val data: T? = null,  //aui cuando es succes resulta que esa clase te devuelve un network class con la data de la api. entonces esta variable almacenara ese dato.
+
+
+/**
+ * Se utiliza una sealed class para almacenar los datos, en este caso una respuesta del servidor en
+ * tres estados iferentes. Se dispone de dos parametros, uno que son los datos de la respuesta del
+ * servidor y un mensaje.
+ *
+ * NetworkResult, admitira cualquier tipo de clase, cualquiera de las tres qeu hemos definido abajo.
+ */
+sealed class NetworkResult<T>( //network
+    val data: T? = null,
     val message: String? = null
 ) {
-    //en el succes the data that wil be passes is never null so we dont need T?
-    class Succes<T>(data: T): NetworkResult<T>(data) //will return network result after passing some data, the data is the performed request. data from NetworkResult is the same as succes
-    //aqui se devuelve el netwok pero con los datos a null pq hay error pero con un mensaje string y es lo que almacena el networkresult.
-    class Error<T>(message: String?, data: T?= null): NetworkResult<T>(data, message) //as a parameters we recive a message and allways put the data to null. this will retutn a data and a mesage
+
+    class Succes<T>(data: T): NetworkResult<T>(data)
+    class Error<T>(message: String?, data: T?= null): NetworkResult<T>(data, message)
     class Loading<T>: NetworkResult<T>()
 
 }

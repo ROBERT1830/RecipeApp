@@ -20,21 +20,9 @@ import kotlinx.android.synthetic.main.fragment_favorites_recipes.view.*
 @AndroidEntryPoint
 class FavoritesRecipesFragment : Fragment() {
 
-    /**
-     * 22--change style of row recipe variables
-     */
-
-
-    /**
-     * 21--Favorite recipesfragment
-     */
     private val mainViewModel: MainViewModel by viewModels()
     private val mAdapter: FavoriteRecipesAdapter by lazy { FavoriteRecipesAdapter(requireActivity(), mainViewModel) } //because we need the mainViewmodel inside the favrecipeadapter we need to initialize the mainviewmodel firts so cut and puit it above
-    //private val mainViewModel: MainViewModel by viewModels()
 
-    /**
-     * 21--FAVORITES RECIPES
-     */
     private var _binding:FragmentFavoritesRecipesBinding? = null
     private val binding get() = _binding!!  //is a read only variable
 
@@ -51,50 +39,49 @@ class FavoritesRecipesFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        //val view = inflater.inflate(R.layout.fragment_favorites_recipes, container, false)
-        //inflate the layout or the clas in order to get those elements
+        /**
+         * Usamos dataBindig, con lo que usando binding vamos a poder acceder a cada una de las
+         * variables indicadas en el layout de favoriteRecipesFragment y setear tanto el
+         * viewmodel y el adapter con el viewmodel y adapter definidos.
+         */
         _binding = FragmentFavoritesRecipesBinding.inflate(inflater, container, false)
         binding.lifecycleOwner = this
         binding.mainViewModel = mainViewModel
         binding.mAdapter = mAdapter
 
 
-        //to show the menu in the action bar
+        //para ver el menu en la barra de navegacion
         setHasOptionsMenu(true)
         setUpRecyclerView(binding.favoriteRecipesRecyclerView)
-
-        //cal mainviewmodel and read recipes from database
-        /**
-         * 21 no longer needed that observe because we used binding. and we are observing from the binding adapter
-         */
-//        mainViewModel.readFavoriteRecipes.observe(viewLifecycleOwner, Observer { favoriteEntity ->
-//            mAdapter.setData(favoriteEntity)
-//        })
-
-
         return binding.root
     }
 
+    //setemos el recycler.
     private fun setUpRecyclerView(recyclerView: RecyclerView){
         recyclerView.adapter = mAdapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
     }
 
+
     override fun onDestroy() {
         super.onDestroy()
-        _binding = null //con esto eliminamos la referencia a todos esos elementos y ya no tenemos que tenerlos en memoria
-        mAdapter.clearContextualAcitonMode() //close the contextual action mode
+        //con esto eliminamos la referencia a todos esos elementos y ya no tenemos que tenerlos en memoria
+        _binding = null
+        //cerramos el modo contextual.
+        mAdapter.clearContextualAcitonMode()
     }
 
+
     /**
-     * 22
-     * create menu of the fragment
+     * Método para crear el menú del fragment.
      */
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.favorite_recipe_menu, menu)
     }
 
+    /**
+     * método para determinar la selección del icono y ejecutar su acción de eliminar.
+     */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.delete_all_favorite_recipes_menu){
             mainViewModel.deleteAllFavoriteRecipes()
@@ -103,6 +90,7 @@ class FavoritesRecipesFragment : Fragment() {
         return super.onOptionsItemSelected(item)
     }
 
+    //método para mostrar el número de recetas elminadas.
     private fun showSnackbar(){
        Snackbar.make(
            binding.root,

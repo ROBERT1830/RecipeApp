@@ -24,14 +24,8 @@ import kotlinx.android.synthetic.main.activity_details.*
 @AndroidEntryPoint
 class DetailsActivity : AppCompatActivity() {
 
-    private val args by navArgs<DetailsActivityArgs>() //esta clase la crea el sistema cuando tu haces las actions. Relemnte contieen on objeto Result con todoos los datos
-
-    /**
-     * 20--Favoirtes
-     * initialize the viewmodel to insert the data
-     */
-    private val mainViewModel: MainViewModel by viewModels() //because we are using this viewmodel which has injected a repository inside. From here whichh is the entrypoint we need to specify that
-
+    private val args by navArgs<DetailsActivityArgs>()
+    private val mainViewModel: MainViewModel by viewModels()
     private var recipeSaved = false
     private var savedRecipeId = 0
 
@@ -39,16 +33,17 @@ class DetailsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_details)
 
-        /**Make that activity suport the action bar*/
+        /*Hacemos que la activity suporte la actionbar.*/
         setSupportActionBar(toolbar)
+        //establecemos el color
         toolbar.setTitleTextColor(ContextCompat.getColor(this, R.color.white))
-        supportActionBar?.setDisplayHomeAsUpEnabled(true) //to go back with the arrow
+        //habilitamos la flecha de ir hácia atrás.
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
 
         /**
-         * 16---> DetailsActivity
-         * Create an array of fragments
-         * and add to that array each of the fragments we created to that arraylist
-         * in a specific order.
+         * Vamos a utilizar ViewPager por tanto nos creamos un array de los fragmentos que
+         * lo van a componer. Los añadimos en un orden específico.
          */
         val fragments = ArrayList<Fragment>()
         fragments.add(OverViewFragment())
@@ -56,7 +51,7 @@ class DetailsActivity : AppCompatActivity() {
         fragments.add(InstructionsFragment())
 
         /**
-         * Create arrya list of strings and add the 3 titles for the 3 framgnts
+         * Creamos un array de strings, que harán referencia a los títulos de cada uno de los fragmentos
          */
 
         val titles = ArrayList<String>()
@@ -68,41 +63,49 @@ class DetailsActivity : AppCompatActivity() {
          * but in order to create a bundel object, we need to get the values or the data from our safe args
          * which we have passed from our recipes fragment to our detailed activity
          * so on the top add a args variable. */
-        val resultBundle = Bundle()
-        /**Because our result variable from our args is type of result which is actually a parcelable we use that funciton to
-         * pass that variable
-         * Resulta que cundo hemos hehco la acction para pasar info de recipeFragment a detailactivity pues
-         * tenemo que pasamos un argumento de tipo Result que es parecelable, lo hemos ocnvertido nosotors para
-         * que se pueda pasar como argumento. entonces args es decir esos argumetnos vana a ser de tupo de la clase
-         * Result. Entonces lo que pasamos por bundle es args.result (result esta definido en el my_nav
-         * en la activity concretamtne en us argumet. )*/
-        resultBundle.putParcelable(RECIPE_RESULT_KEY, args.result) //here we bind the recipe data to the bundle and pass pass the data to the pager adatpater and this adapter fed the data to our framents.
-        /**Now initialize pageAdapter
-         * the parameters are bundle, list of fragments, title, managerframgnts*/
 
+        /**
+         * Antes de inicializar el pager adapter, creamos un objeto bundle y utilizaremos los argumetnos
+         * que nos vienen del fragmento RecipesFragment para cargar el bundle.
+         */
+        val resultBundle = Bundle()
+
+        /**
+         * Relmente lo que estamos pasando como argumentos, es un objeto de tipo Result.
+         * Cuando hemos generado la acción para pasar  de RecipeFragment a DetailsActivity
+         * hemos puesto que queremos que esta ultima obtenga un argumento de tipo Result. Para ello,
+         * hemos tenido que hacer la clase Result parcelable para que pueda pasarse como argumento.
+         * Por tanto la variable args, será de tipo Result.
+         */
+        resultBundle.putParcelable(RECIPE_RESULT_KEY, args.result) //here we bind the recipe data to the bundle and pass pass the data to the pager adatpater and this adapter fed the data to our framents.
+        /**
+         * Inicializamos el pager adapter, con el bundle, la lista de fragmentos, títulos
+         * y el supportmanager.
+         */
         val adapter = com.robertconstantindinescu.recipeaplication.adapters.PagerAdapter(
-            /**This is actually the args from safeargs. */
             resultBundle,
             fragments,
             titles,
             supportFragmentManager
         )
-
-        /**Call the viewpager from activity detials layouit and we can set the adapter*/
+        /**
+         * seteamos el adapter coordinamos el tablayout para mostrar los títulos de cada fragmento.
+         */
         viewPager.adapter = adapter
         tabLayout.setupWithViewPager(viewPager)
 
     }
 
     /**
-     * 20--Favorites
-     * create the menu with the start menu we created
+     * Función que genera el menú de la details activity.
      */
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        //inflate the menu we just created
+        //inflamos el menú creado
         menuInflater.inflate(R.menu.details_menu, menu)
-        val menuItem = menu?.findItem(R.id.save_to_favorites_menu) //find the star menu
-        //create new function to check the start and pass the actual star --> !! because never will be null and we know that
+        //buscamos el icono del menu, que realmente es la estrella.
+        val menuItem = menu?.findItem(R.id.save_to_favorites_menu)
+        //función para comprobar si una determinada receta existe o no en la base de datos
+        //puede o no existir.
         chackSavedRecipes(menuItem!!)
 
         return true
@@ -112,18 +115,24 @@ class DetailsActivity : AppCompatActivity() {
      * to chek if the  recipe that we are passing as argument from fragment recypè(recylcer)
      * exists in the database firts we have to read the database and observe that
      */
+    /**
+     * Función que chequea si una determinada receta existe o no en la base de datos.
+     * Para ello, con un for vamos a recorrenos cada una de las recetas guardadas en favoritos
+     * y la comparamos el id que tenemos en la base de datos con el id de la receta que nos
+     * viene por bundle. Si resulta que son iguales, se cambia el color de la estrella a amarillo
+     * ,nos guardamos el id e indicamos que se ha guardado la receta.
+     * Si no está guardad la receta, cambiamos el color de la estrella a blanco.
+     */
     private fun chackSavedRecipes(menuItem: MenuItem) {
         mainViewModel.readFavoriteRecipes.observe(this, Observer { favoritesEntity ->
             try {
-                //create a for loop and go thoru eahc saved recipe from the favorite entitty
-                    //and compare the id from each result. the id is in the Result class
-                    //compare it with the object that we obtine through args
+
                 for (savedRecipe in favoritesEntity){
                     if (savedRecipe.result.recipeId == args.result.recipeId){
-                        //if there are the same the recipe is already saved and change the color start to yellor using the fucntion
                         changeMenuItemColor(menuItem, R.color.yellow)
-                        //save the recipe id to the global variable for haveing the id prepared.
-                        savedRecipeId = savedRecipe.id //this id es el de la tabla misma no de la propia receta. y ese id de la tabala lo usaremos para eliminar la fila de esa receta. mas a abajo
+                        //Este id es el de la base de datos (no receta de args). Este lo usaremos
+                        //para eliminar la fila de esa receta más abajo.
+                        savedRecipeId = savedRecipe.id
                         recipeSaved = true //that means that  if we have the recipe passed from args saved in the databse becasue its id are the same that means that is saved so true.
                     }else{ //when are not equals change star to white
                         changeMenuItemColor(menuItem, R.color.white)
@@ -138,6 +147,16 @@ class DetailsActivity : AppCompatActivity() {
 
     /**
      * THIS FUNCTIONS ALLOW PERFORMING AN ACTION TO A SELECTED ITEM FROM MENU
+     */
+    /**
+     * Esta función nos permite realizar una determinada acción cuadno seleccionamos
+     * una receta. Si el item selecionado es la flecha de volver hácia atrás
+     * se acaba la activity.
+     *
+     * Poer el contrario si presionamos la estrella y no está guardad la receta, la guardaremos
+     * y cambiaremos el color de la estrella.
+     * Si ya está insertada de forma previa y presionamos la estrella eliminaremos la receta
+     * de favoritos.
      */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if(item.itemId == android.R.id.home){
@@ -155,28 +174,30 @@ class DetailsActivity : AppCompatActivity() {
     }
 
     /**
-     * 20--favorites
+     * Esta función, en primer lugar se crea un objeto de tipo FvoritesEntity
+     * para almacenar en la base de datos la receta selecionada como varotios.
+     * Se utiliza el objeto pasado por bundle.
+     * Se llama a viewmodel para que gestione la inserción de la receta en la base de datos.
+     * Una vez guardada, se cambia el color de la estrella a amarillo y ponemos true recipeSaved
+     *
      */
     private fun saveToFavorites(item: MenuItem) {
-        //create new variable favoritesEntity to create the new object to be inserted
         val favoritesEntity = FavoritesEntity(
             0,
-            args.result //The resutl class(object that is needed can be obtenied from args. when we navigated from recipes fragment to detauils asctiivty.
+            args.result
         )
-
-        //here init the viewmodel by calling it and then insert
         mainViewModel.insertFavoriteRecipe(favoritesEntity)
-
-        /**Change the color of the start selected item from menu
-         * as a parameter we chose the item menu which is a start and the color*/
         changeMenuItemColor(item, R.color.yellow)
         //call a snack bar with a text as argument
         showSnackBar("Recipe saved.")
-        recipeSaved = true // whenever we save the recipe we change the value of recipeSaved to true
+        recipeSaved = true
     }
 
     /**
-     * this method is called from onOptionsItemSelected
+     * Función que elimina una receta seleccionada de la base de datos de favoritos.
+     * Nos  creamos el objeto, a eliminar con el id que nos habíamos preparado antes.
+     * Llamamos a deleteFavoriteRecipe para eliminar la receta y ponemos la variable
+     * recipeSaved a false.
      */
     private fun removeFromFavorites(item: MenuItem){
         //create the objet of the recipe to be removed
@@ -191,8 +212,10 @@ class DetailsActivity : AppCompatActivity() {
 
     }
 
+    /**
+     * Función que muestra un snackbar con un mensaje.
+     */
     private fun showSnackBar(message: String) {
-        //the firts parameter is the actual view which is detailslayput because we named it. This is the constraint layout from activity_details_layout
         Snackbar.make(
             detailsLayout,
             message,
@@ -201,6 +224,9 @@ class DetailsActivity : AppCompatActivity() {
         ).setAction("Okay"){}.show()
     }
 
+    /**
+     * Método para cambiar el color del icono estrella.
+     */
     private fun changeMenuItemColor(item: MenuItem, color: Int) {
         //contextcompat help us to acces some features like getcolor.
         item.icon.setTint(ContextCompat.getColor(this, color))
