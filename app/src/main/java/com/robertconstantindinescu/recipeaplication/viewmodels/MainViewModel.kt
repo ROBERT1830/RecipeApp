@@ -49,6 +49,8 @@ class MainViewModel @ViewModelInject constructor(
 
     /**ROOM DATABASE */
 
+
+
     /**
      * here we are going to use local datasource to get my room database.
      * so we call  the database function readDatabase from our interface dao
@@ -66,6 +68,8 @@ class MainViewModel @ViewModelInject constructor(
 
     //ídem
     val readFavoriteRecipes: LiveData<List<FavoritesEntity>> = repository.local.readFavoriteRecipes().asLiveData()
+
+    val sortByName: LiveData<List<FavoritesEntity>> = repository.local.sortByName().asLiveData()
 
 
     /**
@@ -111,6 +115,13 @@ class MainViewModel @ViewModelInject constructor(
             repository.local.deleteAllFavoriteRecipes()
         }
 
+    fun sortByName()  =
+        repository.local.sortByName()
+
+    fun sortByTimeDuration() = repository.local.sortByTimeDuration()
+
+    fun orderByLikes() = repository.local.orderByLikes()
+
     /** RETORFIT */
 
     //variable livedata que se leera desde el fragmentRecipes. Tendra toda la lsita de recetas obtenidas
@@ -130,6 +141,7 @@ class MainViewModel @ViewModelInject constructor(
      * se crea un job que lo que hace es definir el contexto y ciclo de vida de la corrutina, de tal
      * modo que la vida de la corrutina acabará cuando acabe la vida del vireModel.
      */
+    @RequiresApi(Build.VERSION_CODES.M)
     fun getRecipes(queries: Map<String, String>) = viewModelScope.launch {
         getRecipesSafeCall(queries)
     }
@@ -137,6 +149,7 @@ class MainViewModel @ViewModelInject constructor(
     /**
      * ídem pero necesitamos pasar el Id de la receta en cuestión y el enpoint.
      */
+    @RequiresApi(Build.VERSION_CODES.M)
     fun getRecipesById(recipeId: Int, queryEndPoint: Map<String, String>) = viewModelScope.launch {
         getRecipesByIdSafeCall(recipeId,queryEndPoint )
     }
@@ -144,6 +157,7 @@ class MainViewModel @ViewModelInject constructor(
     /**
      * ídem pero para cuadno realizamos una búsqueda por palabra.
      */
+    @RequiresApi(Build.VERSION_CODES.M)
     fun searchRecipes(searchQuery:Map<String, String> ) = viewModelScope.launch {
         searchRecipesSafeCall(searchQuery)
     }
@@ -151,6 +165,7 @@ class MainViewModel @ViewModelInject constructor(
     /**
      * ídem pero para cuando realizamos búsqueda personallizada.
      */
+    @RequiresApi(Build.VERSION_CODES.M)
     fun getPersonalizedRecipe(personalizedQuery: Map<String, String>) = viewModelScope.launch {
         getPersonalizedRecipesSafeCall(personalizedQuery)
     }
@@ -164,6 +179,7 @@ class MainViewModel @ViewModelInject constructor(
      * Al ser solo una receta no se hace persistencia en la base de datos.
      *
      */
+    @RequiresApi(Build.VERSION_CODES.M)
     private suspend fun getRecipesByIdSafeCall(recipeId: Int, queryEndPoint: Map<String, String>) {
         recipeResponseById.value = NetworkResult.Loading()
         if (hasInternerConnection()){
@@ -188,6 +204,7 @@ class MainViewModel @ViewModelInject constructor(
      * Pero inmediatametne este método guarda en local los datos. Para no tener que hacer peticiones
      * seguidas a la base de datos.
      */
+    @RequiresApi(Build.VERSION_CODES.M)
     private suspend fun getPersonalizedRecipesSafeCall(personalizedQuery: Map<String, String>) {
         personalizedRecipeResponse.value = NetworkResult.Loading()
         if (hasInternerConnection()){
@@ -211,6 +228,7 @@ class MainViewModel @ViewModelInject constructor(
     /**
      * ídem pero para recetas generales.
      */
+    @RequiresApi(Build.VERSION_CODES.M)
     private suspend fun getRecipesSafeCall(queries: Map<String, String>) {
         recipesResponse.value = NetworkResult.Loading()
         if (hasInternerConnection()){
@@ -236,6 +254,7 @@ class MainViewModel @ViewModelInject constructor(
      * ídem pero no hacemos el guardado en la base de datos cuadno buscamos solo por una palabra.
      *
      */
+    @RequiresApi(Build.VERSION_CODES.M)
     suspend private fun searchRecipesSafeCall(searchQuery: Map<String, String>) {
 
         searchRecipesResponse.value = NetworkResult.Loading()

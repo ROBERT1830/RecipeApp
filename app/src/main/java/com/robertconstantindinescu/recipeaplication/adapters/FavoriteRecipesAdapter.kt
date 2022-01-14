@@ -17,7 +17,8 @@ import kotlinx.android.synthetic.main.favorite_recipes_row_layout.view.*
 
 class FavoriteRecipesAdapter (
     private val requireActivity: FragmentActivity,
-    private val mainViewModel: MainViewModel
+    private val mainViewModel: MainViewModel,
+    private val list: List<FavoritesEntity>? = null
         ): RecyclerView.Adapter<FavoriteRecipesAdapter.MyViewHolder>(), ActionMode.Callback {
 
     private lateinit var mActionMode: ActionMode //we need that variable as global to can get out from contextual action mode dinamucally.  and now go to oncreateActionMode
@@ -34,6 +35,11 @@ class FavoriteRecipesAdapter (
         val diffUtilResult = DiffUtil.calculateDiff(favoriteRecipesDiffUtil)
         favoriteRecipes = newFavoriteRecipes
         diffUtilResult.dispatchUpdatesTo(this)
+    }
+
+    fun setData2(newFavoriteRecipes: List<FavoritesEntity>){
+        favoriteRecipes = newFavoriteRecipes
+
     }
 
     class MyViewHolder(private val binding: FavoriteRecipesRowLayoutBinding):
