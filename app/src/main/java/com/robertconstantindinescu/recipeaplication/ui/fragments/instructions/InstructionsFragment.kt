@@ -29,20 +29,16 @@ class InstructionsFragment : Fragment() {
         // Inflate the layout for this fragment
         val view =  inflater.inflate(R.layout.fragment_instructions, container, false)
 
-        /**
-         * Get parcelable
-         */
+        //Obtenemos los argumentos
         val args = arguments
-        //get the data from the bundle using the key. Mi bundle que sera de tipo Result pq es la clase que me viene
-        //y le decimos que obtengamos esos datos del bundle con la clave definida
+        //obtenemos los datos de esos argumetnos usando la clave
         val myBundle: Result? = args?.getParcelable(Constants.RECIPE_RESULT_KEY)
 
-        //te creas una clase anonima en este putno
+        //Nos cremoa una clase anónima de WebViewClient para mostrar la web usadno la url que
+        //nos viene por bunle.
         view.instructions_webView.webViewClient = object : WebViewClient(){}
         val websiteUrl: String = myBundle!!.sourceUrl!!
         view.instructions_webView.loadUrl(websiteUrl)
-
-
         return view
     }
 

@@ -8,8 +8,9 @@ import kotlinx.android.parcel.Parcelize
 import kotlinx.android.parcel.RawValue
 
 /**
- * contains the infomration about the recipe.
- * The serializedName: with that we a re going to only fetch this data from the request.
+ * Esta data clas con SerializedName y el nombre entre paréntesis nos va a mapear
+ * cada elemento del JSON. Contiene la informacion sobre la receta.
+ * hacemos la clase Parcelable para poder pasarla como argumento.
  */
 @Parcelize
 data class Result(

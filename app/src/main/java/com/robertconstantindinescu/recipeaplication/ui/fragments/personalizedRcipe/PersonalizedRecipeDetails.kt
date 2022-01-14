@@ -38,26 +38,33 @@ class PersonalizedRecipeDetails : AppCompatActivity() {
     private val mainViewModel: MainViewModel by viewModels()
     private val  recipesViewModel: RecipesViewModel by viewModels()
 
-
+    /**Argumentos que se pasan desde PersonalizedFoodRecipeFragment al realizar la
+     * petición y hacer click sobre la receta del recyclerView. */
     private val args by navArgs<PersonalizedRecipeDetailsArgs>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = ActivityPersonalizedRecipeDetailsBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
 
-        //setSupportActionBar(toolbar)
-        //toolbar.setTitleTextColor(ContextCompat.getColor(this, R.color.white))
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
+        //nos guardamos en una variable el id de la receta elegida.
         val personalizedRecipeId = args.personalizedFoodRecipeItem.id
+        //hacemos la petición al servidor de los detalles de la receta con el id determinado.
         requestApiData(personalizedRecipeId)
 
 
     }
 
-
-
-
+    /**
+     * Este método realiza la peticion al servidor utilizando la query devuelta por el
+     * método applyQueryById. Al llamar a getRecipesById se efectuara una petición al servidor
+     * y la variable livedata recipeResponseById se actulizara. Desde aquí, se observa ese cambio
+     * y en función del tipo de respuesta realizaremos una acción u otra.
+     * En este caso cuadno la respuesta sea de tipo Succes, accederemos a los datos y si no son
+     * nulos vamos a cargar la imagen correspondiente, el título y una descripción.
+     */
     private fun requestApiData( personalizedRecipeId: Int){
         Log.d("RecipesFragment", "requestApiData called!")
 
@@ -65,42 +72,31 @@ class PersonalizedRecipeDetails : AppCompatActivity() {
         mainViewModel.recipeResponseById.observe(this, Observer { response ->
             when(response){
                 is NetworkResult.Succes ->{
-                    //hide shimmer response becase we getdata
-
-                    //get acces to the food recipe
-                    //accedes a alos datos de NetworkResult que es una clase foodRecipe qeu tiene una lista de result y le pasas esa lsita al adapter.
                     response.data?.let {
 
 
-                        Glide.with(this) //si no ponemos una inner clas no nos permite poner el context. Pq una inner clas lo qeu hace es permitirnos tambien usar los atributos del construcitr princiapl que es el MainAdapter.
+                        Glide.with(this)
                             .load(it.image)
                             .centerCrop()
                             .into(mBinding.mainImageView)
-//                        mBinding.mainImageView.load(BASE_IMAGE_URL +  it.image)
-//                        {
-//                            crossfade(600)
-//                            kotlin.error(R.drawable.ic_error_placeholder)
-//                        }
-
-
                         mBinding.titleTextView.text = it.title
                         mBinding.summaryTextView.text = it.summary
 
                     }
                 }
-
-
-
             }
             Unit
         })
 
     }
 
+    /**
+     * Método encargado de terminar la activity.
+     */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if(item.itemId == android.R.id.home){
             finish() //close details activity
-            /**20---Favorites*/
+
         }
 
         return super.onOptionsItemSelected(item)

@@ -7,13 +7,22 @@ import com.robertconstantindinescu.recipeaplication.models.FoodRecipe
 import com.robertconstantindinescu.recipeaplication.models.Result
 
 /**
- * we wil have 2 funcitons. 1 wich will convert the recipe to string and the second
- * wichc will convert the string from the database in foodRecipe Object for use it
+ * Esta clase se utiliza para hacer conversiones de objetos complejos. Resulta que en sql es complicado
+ * guardar objetos complejos como por ejemplo un Objeto que a su vez contiene objetos y listas
+ * como sucede con la respuesta en formato JSON que nos llega del servidor.
+ * En tales casos, usaremos Typeconverter. De modo que cada vez que room detecte que tiene que
+ * guardar un objeto complejo como es el caso de FoodRecipe, llamará a la función determinada
+ * para serializar ese JSON y poder guardarlo en la base de datos como un string JSON.
+ *
+ * Estas conversiones las haremos con GSON, una libreria de google.
  */
 class RecipesTypeConverter {
 
     var gson = Gson()
 
+    /**
+     * Función que convierte el objeto complejo a string.
+     */
     @TypeConverter
     fun foodRecipeToString(foodRecipe: FoodRecipe):String{
         //we use a GSON library to serialize the object that we are passing.
@@ -22,6 +31,10 @@ class RecipesTypeConverter {
 
     }
 
+    /**
+     * Función que realiza el paso contrario cuadno el objeto se saca de la basd de datos.
+     * convertimos el JSON serializado a un objeto complejo.
+     */
     @TypeConverter
     fun stringToFoodRecipe(data: String): FoodRecipe{
         //thi wil convert the string from the database to a FoodRecipe object
@@ -31,7 +44,7 @@ class RecipesTypeConverter {
 
 
     /**
-     * 19---ROOM FAVORITES
+     * Idem para ambas funciones que siguen.
      */
     @TypeConverter
     fun resultToString(result: Result): String{

@@ -33,7 +33,7 @@
     <fragment
         android:id="@+id/foodJokeFragment"
         android:name="com.robertconstantindinescu.recipeaplication.ui.fragments.personalizedRcipe.PersonalizedFoodRecipeFragment"
-        android:label="Food Joke"
+        android:label="Custom Food"
         tools:layout="@layout/fragment_personalized_recipe" >
         <argument
             android:name="backFromIngredientsBottomSheet"

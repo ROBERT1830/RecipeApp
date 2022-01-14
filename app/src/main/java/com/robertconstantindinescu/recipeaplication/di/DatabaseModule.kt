@@ -19,16 +19,34 @@ import javax.inject.Singleton
  * here we will tell hilt library hot to provide our own database nuilder and our recipes dao.
  */
 
+/**
+ * Utilizamos un objeto para crear el módulo de dependencias necesarias para la interfaz Dao.
+ * Para que la interfáz dao pueda realizar las funciones de cada uno de los métodos, necesita que
+ * estos métodos operen sobre una base de datos.
+ * De este modo usando inyección de dependencias vamos a definir la base de datos y esta se la vamos
+ * a proveer al dao.
+ *
+ * la instancia de la base de datos sigue el patrón singleton. Para que solo tengmaos una sola instanfcia
+ * de esta base de datos durante la vida de la aplicación.
+ *
+ * Como no podemos hacer una inyección directa por constructor de la base de datos room porque es
+ * una libreria de terceros y tampoco de una interfáz debemos de crearnos un módulo para proveer ambos.
+ *
+ * Gracias a @Provide podemos proveer interfaces y librerias de terceros.
+ */
 @Module
 @InstallIn(ApplicationComponent::class)
 object DatabaseModule {
+
     /**
-     * this function return rom database builder
+     * Esta función va a retornar una instancia de la base de datos, siemrpe la misma.
+     * Se usa la inyección de  @ApplicationContext, porque el builder de room necesita de un
+     * contexto.
      */
     @Singleton
-    @Provides //provides because is a thirdpartty class from library
-    fun provideDatabase( //devuelve una instancia de la base de datos simpere la misma pq tenemos singleton
-        @ApplicationContext context: Context  //this function has injected the context as a aparameter becasue we need it for the room builder
+    @Provides
+    fun provideDatabase(
+        @ApplicationContext context: Context
     ) = Room.databaseBuilder(
         context,
         RecipesDataBase::class.java,
@@ -39,8 +57,11 @@ object DatabaseModule {
     /**
      * in order to provide our dao we need to provide the database dependency. lokk an aexample normal you will se
      */
+    /**
+     * Función que provee el dao y a su vez provee al dao con la base de datos creada. Todo ello
+     * para devolver la interfaz dao.
+     */
     @Singleton
     @Provides
-    //nos devuelve la interfaz dao
-    fun provideDao(database: RecipesDataBase) = database.recipesDao() //we calll this function from RecipesDatabase here
+    fun provideDao(database: RecipesDataBase) = database.recipesDao()
 }

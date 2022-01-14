@@ -14,17 +14,25 @@ import kotlinx.android.synthetic.main.activity_main.*
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
+    /*Al haber utilizado navigation Components, para realizar la navegación entre las diferentes
+    * pantallas, usaremos un objeto NavController que gestiona la navegación*/
     private lateinit var navController: NavController
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        /**
-         * Create the navigation
-         */
+
+        /**Cuando iniciamos la aplicación, vamos a realizar directamente la navegación hascia el
+         * navHostFragment. En este caso, este es a partir del cual se realizará todas las demás
+         * navegaciones por los diferentes fragmentos.*/
         val navController = findNavController(R.id.navHostFragment) //este va a buscar un controlador de navegacion en ese navhost que es el que tiene my_nav
-        //configure the three main fragments to be navgated.We have to
-        //indicate the set of destinations by their id.
+
+
+        /**Configuramos los tres fragmentos por los qeu se va a navegar.
+         * Con lo cual configuramos la appBar con los tres fragmetnos.
+         * Indicamos los destinos a esos fragmentos por su id. */
         val appBarConfiguration = AppBarConfiguration( //esto es una funcion publica que hereda de appbarconfig
             setOf(
                 R.id.recipesFragment,
@@ -33,13 +41,18 @@ class MainActivity : AppCompatActivity() {
             )
         )
 
-        //Add a navcontroller to the bottomNavigationView
+        /**Vamos a añadir a la barra de navegación del fondo de la pantalla
+         * el controlador de la navegación. para poder navegar desde ella. */
         bottomNavigationView.setupWithNavController(navController)
-        //setup the navigation bar for all the fragments. I mean
-        //we will have all the fragments with the same bottom nav.
+
+        /**Ahora seteamos la barra de navegación con todos los fragmentos creados. */
         setupActionBarWithNavController(navController, appBarConfiguration)
     }
 
+    /**
+     * Método para poder navegar entre los fragmentos. De modo que cuando pasemos de un fragmento a otro
+     * tendremos una flecha arriba y podremos volver all fragment inicial.
+     */
     override fun onSupportNavigateUp(): Boolean {
 
         //to navigate betwen fragments

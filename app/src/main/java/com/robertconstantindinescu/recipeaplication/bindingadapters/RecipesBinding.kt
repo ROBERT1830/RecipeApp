@@ -7,30 +7,24 @@ import androidx.databinding.BindingAdapter
 import com.robertconstantindinescu.recipeaplication.data.database.entities.RecipesEntity
 import com.robertconstantindinescu.recipeaplication.models.FoodRecipe
 import com.robertconstantindinescu.recipeaplication.util.NetworkResult
-/**for the layout fragment_recipes*/
+
 class RecipesBinding {
     companion object{
+
         /**
-         * two functions will be addd here
-         * 1- for the iamge
-         * 2-for the text
+         * requireAll = true : indica que se necesitan dos argumetnos desde el layout.
+         * tanto la respuesta del api como la lectura de la base de datos. Esto es porque
+         * debemos de usar ambas para hacer ciertas comprobaciones que se indican más abajo.
          */
-
-
-        /**parameters
-         * 1-the view on wher ewe are going to use this custom binding adapter. In a imageview
-         * 2- api response with theNetworkresponse
-         * 3-Database List<RecipesEntitiy>*/
-        //here we specify two atribute because those are gona be used in the fragment_recipe layout. requireall menas that we want to make our compiler display a warning error if we specify only one atribute.
         @BindingAdapter("readApiResponse", "readDatabase", requireAll = true)
-        //esos dos parametros son los que se cogen en el layout pq lo hemos bindeado con el viewmodel
-        // y desde ahi como podemos acceder al viewmodel pues le mandas el resultado ambas variables
-        // livedata que son readRecipes para la base de datos y recipesResponse para la api. y aqui se hace una evaluacion de ellas
-        //y como automaticametne se coge la imageview y se pasa como parametro pues podemos modificar
-        //cosas de ella como su visibilidad en funcion del estado de lso dos parametros que pasamos.
-        //como las variables qeu se pasasn son lifedata, necesitamos haber especificado el ciclo de vida
-        //del fragmento donde esta la vista que vamos a manipular dinamicamente.
 
+        /**
+         * Método que va a modificar la visibilidad de la imagen de fondo en el recylcerview de
+         * RecipesFragment. En función del estado de la respuesta que obtenemos del servidor,
+         * modificaremos la visibiliadad de la iamgen. También tenemos en cuenta el estado de la
+         * base de datos. Cuano tenemos una respuesta de error y la base de datos está vacía
+         * mostraremos la imagen. en los casos restantes no la mostramos.
+         */
         @JvmStatic
         fun errorImageViewVisibility(
             imageView: ImageView,
@@ -47,16 +41,19 @@ class RecipesBinding {
             }
         }
 
+        /**
+         * Idem pero para el texto de fondo cuadno no hay datos.
+         */
         @BindingAdapter("readApiResponse2", "readDatabase2", requireAll = true)
         @JvmStatic
         fun errorTextViewVisibility(
             textView: TextView,
             apiResponse: NetworkResult<FoodRecipe>?,
-            database: List<RecipesEntity>?  //puede que no tengas datos de al base de datos? si
+            database: List<RecipesEntity>?
         ){
             if(apiResponse is NetworkResult.Error && database.isNullOrEmpty()){
                 textView.visibility = View.VISIBLE
-                textView.text = apiResponse.message.toString() //acedes al mensaje de error que se alamcena en network.
+                textView.text = apiResponse.message.toString()
             }else if(apiResponse is NetworkResult.Loading){
                 textView.visibility = View.INVISIBLE
             }else if (apiResponse is NetworkResult.Succes){

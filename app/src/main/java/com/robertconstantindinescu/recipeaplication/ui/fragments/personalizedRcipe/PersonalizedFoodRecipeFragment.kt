@@ -95,11 +95,14 @@ class PersonalizedFoodRecipeFragment : Fragment() {
         setupRecyclerView()
 
 
+
+        //Observamos los cambios en el estado de red. (Explicado en RecipesFragment)
         recipesViewModel.readBackOnline.observe(viewLifecycleOwner, Observer {
             recipesViewModel.backOnline = it
         })
 
 
+        //recolectamos los datos del estado de red (Explicado en RecipesFragment)
         lifecycleScope.launch {
             networklistener = NetworkListener()
             networklistener.checkNetworkAvailability(requireContext()).collect { status ->
@@ -112,7 +115,7 @@ class PersonalizedFoodRecipeFragment : Fragment() {
 
         /**Leer el dataStore y extraemos los datos de los diferentes tipos de ingredientes. Realmente
          * obtendremos un objeto que hemos creado en el datastore. Lo obtenemos a modoo de flow,
-         * pero aqui lo convertimos ne livedata para ser observado*/
+         * pero aqui lo convertimos en livedata para ser observado*/
         recipesViewModel.readMeatVegyFishOtherType.asLiveData().observe(viewLifecycleOwner, androidx.lifecycle.Observer { value ->
             /**Nos guardamos el texto de cada chip*/
             meatTypeChip = value.selectedMeatType
@@ -170,15 +173,13 @@ class PersonalizedFoodRecipeFragment : Fragment() {
             fromFab = false
 
         }
-
-
-
-
-
-
         return binding.root
     }
 
+
+    /**
+     * Método utilizado para actualizar el estado de chekeado de los chips.
+     */
     private fun updateChip(chipId: Int, chipGroup: ChipGroup) {
         //our chip id will not be 0 if we hav emade a differnte selecion from the first one nd saved the data in the datastore
         if (chipId != 0){
@@ -191,9 +192,10 @@ class PersonalizedFoodRecipeFragment : Fragment() {
         }
     }
 
-
-
-
+    /**
+     * Método que configura el recyclerView. Es similar al anterior visto en RecipesFragment
+     * pero esta vez horizontal.
+     */
     private fun setupRecyclerView() {
         binding.recyclerviewPersonalizedRecipe.adapter = mAdapter
         binding.recyclerviewPersonalizedRecipe.layoutManager =
@@ -201,22 +203,15 @@ class PersonalizedFoodRecipeFragment : Fragment() {
 
     }
 
-    private fun readDataBase() {
-        lifecycleScope.launch {
-            mainViewModel.readPersonalizedRecipes.observeOnce(
-                viewLifecycleOwner,
-                Observer { database ->
-                    if (database.isNotEmpty()) {
-                        mAdapter.setData(database[0].personalizedRecipe)
-                    } else {
-                        requestApiData()
-
-                    }
-
-                })
-        }
-    }
-
+    /**
+     * Método que realiza la petición al servidor. 
+     * En primer lugar se obtiene la query con los paremetros y valores determinado en fromato 
+     * HashMap. 
+     * Se realiza la petición al servidor que devuelve un  NetworkResult<PersonalizedFoodRecip>
+     * Comrpobamos el estado de la respuesta.
+     * Si es succes, accedemos a los datos y setemos el adapter.
+     * En caso contrario mostramos mensaje de error.
+     */
     private fun requestApiData() {
         mainViewModel.getPersonalizedRecipe(recipesViewModel.applyPersonalizedRecipeQuery())
         mainViewModel.personalizedRecipeResponse.observe(viewLifecycleOwner, Observer { response ->
@@ -243,6 +238,9 @@ class PersonalizedFoodRecipeFragment : Fragment() {
 
     }
 
+    /**
+     * Método que carga los datos de la base de datos, siewmpre y cuadno no esté vacía.
+     */
     private fun loadDataFromCache() {
         lifecycleScope.launch {
             mainViewModel.readPersonalizedRecipes.observe(viewLifecycleOwner, Observer { database ->
@@ -253,6 +251,10 @@ class PersonalizedFoodRecipeFragment : Fragment() {
         }
     }
 
+    /**
+     * Devolvemos la variabble que apunta a FragmentPersonalizedRecipeBinding a null para destruir lals referencias
+     * y evitar fugas de memoria.
+     */
     override fun onDestroy() {
         super.onDestroy()
         _binding = null

@@ -81,5 +81,6 @@
     <string name="no_selection">Nothing</string>
     <string name="nofish">Nothing</string>
     <string name="nothing">Nothing</string>
+    <string name="personalized_recipe">Custom Recipe</string>
 
 </resources>

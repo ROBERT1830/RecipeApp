@@ -21,23 +21,25 @@ import java.util.*
 
 
 /**
- * this fragment will not hereda from Fragment because it will not be a nirmal fragment. Instead
- * we will use BottomSheetDialogFrafgment
+ * Este fragmento, no hereda de fragment como es habitual. Lo hace de BottomSheetDialogFragment
+ *puesto que será un fragmento que se mostrará sobre el RecipesFragment a modo de diálogo.
  */
 class RecipesBottomSheet : BottomSheetDialogFragment() /*Fragment()*/ {
 
     private  lateinit var recipesViewModel: RecipesViewModel
 
-    /**Create the different variables for the chips that are needed to pass as a parameter for the saveMealAndDietType
-     * function in RecipesViewModel. */
+    /**
+     * Nos creamos las diferentes variables para los chip que usaremos en el método saveMealAndDietType
+     * de RecipesViewModel.
+     * Id 0 hace referencia al primero de los chip selecionado.
+     */
     private var mealTypeChip = DEFAULT_MEAL_TYPE
-    private var mealTypeChipId = 0 //this id represents the actuall id for one of those chip of our chip group. the first one
+    private var mealTypeChipId = 0
     private var dietTypeChip = DEFAULT_DIET_TYPE
     private var dietTypeChipId = 0
 
     /**Now we have to implement onCheked listener and whenever we check one chipp we want to store its value
      * and its Id. And when press the applu button we wwant to save taht selected chip id and name to the datastore*/
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,39 +61,60 @@ class RecipesBottomSheet : BottomSheetDialogFragment() /*Fragment()*/ {
          * con la seleccion que habia hecho el usuaio antes.
          * para ello vamos a coger ese Flow<MealAndDietType> almacenado en readMealAndDietType y que es como un live data
          * y lo vamos a convertir a livedata para que pueda ser observado su valor o el cambio de valor. */
+
+        /**
+         * Para implementar la perssitencia de datos en el fragment doalog debemos de leer los datos de
+         * dataStore preferences y mostrarlos en el fragmento dialog con la selección anterior.
+         * Para ello vamos a coger ese Flow<MealAndDietType> almacenado en readMealAndDietType
+         * y lo pasmos a livedata para que pueda ser observado el cambio de valor.
+         *
+         */
         recipesViewModel.readMealAndDietType.asLiveData().observe(viewLifecycleOwner, androidx.lifecycle.Observer { value ->
-            //de este readMealAndDietType que es un  vamosFlow<MealAndDietType convertido a livedata vamos  a coger dos valores
-            //y almacenarlos en mealTypeChip y dietTypeChip par amostrar los chip selecioando
+            //de este readMealAndDietType que es un Flow<MealAndDietType convertido a livedata vamos
+            // a coger dos valores y almacenarlos en mealTypeChip y dietTypeChip par amostrar los chip selecioandos
             mealTypeChip = value.selectedMealType
             dietTypeChip = value.selectedDietType
-            /**Siempre que abramos el dialogbottom el observer se llamara pq se hace una lectura de la datastore preference
-             * y con esos datos que recogemos se los asignamos a esas variables
-             * Ahora usaremos esas variables para hacer la seleccion de esos chip y mostrale al usaurio su anterior selecion para ello usaremos
-             * una funcion en al que pasarmeo los id del chip y el grupo al que pertence*/
-
+            /**Siempre que abramos el dialogbottom el observer se llamara pq se hace una lectura de la
+             * datastore preference y con esos datos que recogemos se los asignamos a esas variables
+             * Ahora usaremos esas variables para hacer la seleccion de esos chip y mostrale al usaurio
+             * su anterior selecion. Para ello usaremos una funcion en al que pasaremos los id del
+             * chip y el grupo al que pertence*/
             updateChip(value.selectedMealTypeId, mView.mealType_chipGroup)
             updateChip(value.selectedDietTypeId, mView.dietType_chipGroup)
         })
-        //accedemos al mealtype chip group
+        /**Now we have to implement onCheked listener and whenever we check one chipp we want to store its value
+         * and its Id. And when press the applu button we wwant to save taht selected chip id and name to the datastore*/
+
+        /**
+         * Implementamos el setOnCheckedChangeListener, de modo que cuando selecionemos un nuevo chip
+         * alamcenaremos su valor e id.
+         */
         mView.mealType_chipGroup.setOnCheckedChangeListener { group, selectedChipId ->
-            //de ese grupo de chip vamos a seleccionar el id del que se ha chequeado usando findview el cual tiene como tipo de
-            //busqueda una vista de tipo Chip. Es decir que poneindole la clase Chip el sabe que tipo de vista tiene que buscar
-            val chip = group.findViewById<Chip>(selectedChipId) //entonces en chip tendremos ese id
-            val selectedMealType = chip.text.toString().lowercase(Locale.ROOT) //almavenas el texto del chip con el id que hemos detemrinado arriba
-            //set the values of the top variables
+            //de ese grupo de chip vamos a seleccionar el id del que se ha chequeado usando
+            // findview el cual tiene como tipo de busqueda una vista de tipo Chip.
+            // Es decir que poneindole la clase Chip el sabe que tipo de vista tiene que buscar
+            val chip = group.findViewById<Chip>(selectedChipId)
+            //almavenas el texto del chip con el id que hemos detemrinado arriba
+            val selectedMealType = chip.text.toString().lowercase(Locale.ROOT)
+            //sseteamos las variables con los valores obtenidos de los chip.
             mealTypeChip = selectedMealType
             mealTypeChipId = selectedChipId
         }
 
+
+        /**
+         * ídem pero para el tipo de dieta.
+         */
         mView.dietType_chipGroup.setOnCheckedChangeListener { group, selectedChipId ->
-            val chip = group.findViewById<Chip>(selectedChipId) //entonces en chip tendremos ese id
-            val selectedDietType = chip.text.toString().lowercase(Locale.ROOT) //almavenas el texto del chip con el id que hemos detemrinado arriba
-            //set the values of the top variables
+            val chip = group.findViewById<Chip>(selectedChipId)
+            val selectedDietType = chip.text.toString().lowercase(Locale.ROOT)
             dietTypeChip = selectedDietType
             dietTypeChipId = selectedChipId
         }
 
-        //lsitener to apply button
+        /**
+         * Listener asignado al botón para guardar en DataStore la selección del usuario.
+         */
         mView.apply_btn.setOnClickListener {
             /**here we are going to use our datastore through the recipes viewmodel*/
             recipesViewModel.saveMealAndDietType(
@@ -102,23 +125,20 @@ class RecipesBottomSheet : BottomSheetDialogFragment() /*Fragment()*/ {
 
             )
             /**when we prpess the button apply set the boolean argument to true*/
+            /*Ponemos los argumentos que pasamos al RecipeFragment, a true. Puesto que esto
+            * lo usaremos para hacer que la app leea de la base de datos o del servidor.
+            * Si resulta que venimos del dialog fragmet la app hara la petición al servior. */
             val action = RecipesBottomSheetDirections.actionRecipesBottomSheetToRecipesFragment(true)
-            /**And when we navigate to the recipe fragment we will pas the argument seted to true*/
+            //hacemos la navegación
             findNavController().navigate(action)
         }
-
-        /**
-         * Entones lo que hemso hechop es qeu cuadno clicamos cada uno de los chip vamos a guardar su id
-         * y su nombr en als variabel euq tenemos arriba. Entones ahora cuadno apretamos apply guardamos esos datos en el
-         * el datastore preferences repo.
-         */
-
-
         return mView
     }
 
+    /**
+     * Método utilizado para actualizar la selección de los chip.
+     */
     private fun updateChip(chipId: Int, chipGroup: ChipGroup) {
-        //our chip id will not be 0 if we hav emade a differnte selecion from the first one nd saved the data in the datastore
         if (chipId != 0){
             try {
                 chipGroup.findViewById<Chip>(chipId).isChecked = true

@@ -22,22 +22,17 @@ import com.robertconstantindinescu.recipeaplication.ui.fragments.recipes.Recipes
 import org.jsoup.Jsoup
 import java.lang.Exception
 
+
 /**
- * this class is used to bind the Result clas svalues to the layout
+ * Esta clase se utiliza para el databinding con los layouts.
  */
 class RecipesRowBinding {
     //create a companaion object to acces the data from everywhere even from the layout
     companion object {
-
         /**
-         * Funciton that acts as a click listener to use for clicl in the recycler
-         * the firt aprameter is the contraint layout we are actiion on and the second one is
-         * the Result model class.
-         * Then inside set the onClickListener. RecipesFragmentAction is a class that is created qhen
-         * we perfomr an action
          *
-         * IMPORTANT : FOR THAT TO ORK WE NEED TO MAKE THE LIST<extendedingredient> parcelized as well, not the list
-         * bust the clas itself.
+         * @JvmStatic--- con esta anotacion le indicamos al compilador que haga la función estática
+         * para que pueda ser accedida desde cualquier lugar.
          */
         @BindingAdapter("onRecipeClickListener")
         @JvmStatic
@@ -55,6 +50,11 @@ class RecipesRowBinding {
             }
         }
 
+        /**
+         * Función que gestiona la navegación cuadno clicamos un elemntos del recycler. La navegación
+         * se realiza al fragmento que muestra los detalles.
+         * El primer parametros es el padre, un LinearLayout y el objeto personalizedFoodRecipeItem
+         */
         @BindingAdapter("onPersonalizedRecipeClickListener")
         @JvmStatic
         fun onPersonalizedRecipeClickListener(
@@ -65,7 +65,6 @@ class RecipesRowBinding {
             personalizedRecipeLayout.setOnClickListener {
                 try {
                     val action = PersonalizedFoodRecipeFragmentDirections.actionFoodJokeFragmentToPersonalizedRecipeDetails2(personalizedFoodRecipeItem)
-                    //haces la navegacion dede cualquier punto del contraintLayout usando la action que hemos definido
                     personalizedRecipeLayout.findNavController().navigate(action)
 
                 }catch (e: Exception){
@@ -78,25 +77,11 @@ class RecipesRowBinding {
 
         }
 
-
-        //crete the function wich will convert integer of number of likes into string
         /**
-         * this will have 2 parameters. 1-the actual type of view on which we are going to use this function
-         * in that case a we want to display the number in  a textview. 2-the actual type data from the Result class
-         * in that case an integer.
-         * We need to annotate the function with two anotations
-         * @BindingAdapter() and inside we have to specify the name of the atrribute wichh we are going to use inside our
-         * recipes row_layot. es como que ese nombre contendra el dato gracias a bindingadapter y lo podras
-         * usar en el textview para poner el dato convertido.
-         * @JvmSttic() Specifies that an additional static method needs to be generated from this
-         * element if it's a function. If this element is a property, additional static
-         * getter/setter methods should be generated.
-         * with this annotation we are telling the compailer to make our function static
-         * to acces this funtion elsewhere in our projects. So when we go to the recipes_row_layout
-         * and try to acces this function we will can.
-         *
-         *
-         *
+         * Función que setea el número de likes en el textview determinado. Para ello pasamos
+         * desde el layout como argumentos el texview y el numero de likes que si nos vamos
+         * al layout determiando veremos que pasamos el numero de likes del objeto.
+         * Simplemente con esos datos, asignamos el número con el texto.
          */
         @BindingAdapter("setNumberOfLikes")
         @JvmStatic
@@ -104,6 +89,9 @@ class RecipesRowBinding {
             textView.text = likes.toString()
         }
 
+        /**
+         * ídem
+         */
         @BindingAdapter("setNumberOfMinutes")
         @JvmStatic
         fun setNumberOfMinutes(textView: TextView, minutes: Int) {
@@ -111,10 +99,11 @@ class RecipesRowBinding {
         }
 
         /**
-         * here we have to create a newbindig adapter but now for an image view and a text because
-         * we will change the color of the icon and then the text. So we can pass as a first parameter
-         * a generic view because we will iuse this generic view to actually act in both types of view
-         * an imaggeview and a textview.
+         * En este caso usaremos este método para cambiar el color de dos vistas, un textview y un
+         * imageview. Por eso se utiliza view y no se especifica una vista determinada.
+         * Si resulta que el estado de la propiedad vegan del objeto que estamos pasando, es true
+         * entonces determinamos con un when el tipo de vista y asignamos el color verde.
+         * De lo contrario lo dejamos por defecto.
          */
         @BindingAdapter("applyVeganColor")
         @JvmStatic
@@ -141,11 +130,11 @@ class RecipesRowBinding {
                 }
             }
         }
-
         /**
-         * Create a function to bind the image. 2 parameters neded
-         * 1-is the actuall view where we use this bindingadapter. so will we the imageview.
-         * 2-Te img url from Result
+         * Este método va a realizar la carga de la iamgen que pasamos desde el layout.
+         * Para ello usamos la libreria coil a la que le pasamos la url y nos genera la imagen.
+         * en caso contrario nos pone un icono de error.
+         * Además nos ofrece opciones de diseño como crossfade.
          */
         @BindingAdapter("loadImageFromUrl")
         @JvmStatic
@@ -157,10 +146,10 @@ class RecipesRowBinding {
                 //only those images that were catched correctluy when there were internet conection will display correctly and the other no
             }
         }
-
         /**
-         * 16---
-         * parameters is text view becaus we use this funciont on a atextview
+         * Este método realiza el parseo del HTML que obtenemos. Cuando obtenemos un texto del servidor,
+         * resulta que se nos muestran las etiquetas html. Con la libreria Jsoup parseamos la descripcion
+         * y generamos un texto normal sin  etiquetas.
          */
 
         @BindingAdapter("parseHtml")

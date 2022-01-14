@@ -26,7 +26,8 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 /**
- * only used to share the api end points and make clenaear the Recipefragment. This class wiil be shread betwen the recipesGragment and RecipesBottomSheet
+ * Esta clase, se utiliza para gestionar los endpoint de las diferetnes peticiones al servidor.
+ *
  */
 class RecipesViewModel @ViewModelInject constructor(
     application: Application,
@@ -43,8 +44,7 @@ class RecipesViewModel @ViewModelInject constructor(
     private var otherIngredientsType = Constants.DEFAULT_OTHER_INGREDIENT_TYPE
 
     /**
-     * NETWORK--->
-     * create a variable network sataus
+     * Variables para el estado de la red.
      */
     var networkStatus = false
     var backOnline = false
@@ -52,32 +52,43 @@ class RecipesViewModel @ViewModelInject constructor(
 
     //the type of that variable will be  Flow<MealAndDietType> and we use that to read the datasTORE REPO AND USE the values to display then inside the queries and perfomr later the query. when press the fab select the chip and apply
     //lo que pasa aqui es que si nos fijamos readMealAndDietType es de tipo Flow<MealAndDietType>, que actua como una especie de live data y puede ser observable desde las activity o fragments
-    val readMealAndDietType = dataStoreRepository.readMealAndDietType
-    //function to save mealanddiet type. will have 4 parameters. Which will represents  the 4 values we defined inside the datastore repository
 
-    // TODO: 2/11/21 CONTINUAR CON  readMeatVegyFishOtherType DEL DATASTORE
+    /**
+     * readMealAndDietType es de tipo Flow<MealAndDietType> actua como una especie de live data
+     * y puede ser recolectado desde las activity o fragments
+     */
+    val readMealAndDietType = dataStoreRepository.readMealAndDietType
     val readMeatVegyFishOtherType = dataStoreRepository.readMeatVegyFishOtherType
 
     /**
-     * con esto estamos recogiendo un flow del datarepository y entonces aui lo convertimos en un livedata
+     * con esto estamos recogiendo un flow del datarepository y entonces aqui lo convertimos en un livedata
      * que podra ser observado.
      */
     val readBackOnline =
-        dataStoreRepository.readBackOnline.asLiveData() //convertimos el flow en un livedata observable. Fijste que cuadno hemos trabajado ocn SttteFlow no lo hemos hecho
+        dataStoreRepository.readBackOnline.asLiveData()
 
 
-    /**Fijate que aqui no vamos del viremodel a un repo y a la datastore. Pq esta data sotre hace como de repo tamien por eso se llama datastoreRepo*/
+
+    /**Esta función se encarga de realizar el guardado del tipo de comida y dieta cuando
+     * hacemos una selección en el bottomsheet.
+     * Para ello se ha utiliado el DataStore para almacenar ese conjunto de selecciones
+     * como conjutnos de clave valor. */
     fun saveMealAndDietType(mealType: String, mealTypeId: Int, dietType: String, dietTypeId: Int) =
         //Dispatchers.IO pq vamos a hacer operaciones en base de datos auque sea mas pequeña como la datastore preference
         viewModelScope.launch(Dispatchers.IO) {
             dataStoreRepository.saveMealAndDietType(mealType, mealTypeId, dietType, dietTypeId)
         }
 
+    /**Función que utiliza el DataStore para almacenar el estado de la red. Al ser un proceso en el que
+     * interviene almacenamiento en algún tipo de base de datos como DataStore, pues al usar
+     * las corrutinas se especifica Dispatchers.IO*/
     fun saveBackOnline(backOnline: Boolean) =
         viewModelScope.launch(Dispatchers.IO) {
             dataStoreRepository.saveBackOnline(backOnline)
         }
 
+    /**ídem pero para guardar la selección de los ingredientes en el apartado de recetas personalizadas
+     * También utiliza dataStoreRepository*/
     fun saveMeatFishVegyType(
         meatType: String, meatTypeId: Int, vegetableType: String, vegetableTypeId: Int,
         fishType: String, fishTypeId: Int
@@ -94,31 +105,34 @@ class RecipesViewModel @ViewModelInject constructor(
     /**
      * basically we call this function inside  getRecipes and that one will retunr a hasmap of all queries
      */
+    /**
+     * Función que se encarga de montar la query necesaria para hacer la petición al servidor.
+     * Se utiliza un HasMap dónde tendremos las claves (parámetros) con su respectivo valor.
+     *
+     * @return ---> devolvemos la query formada que se usará para hacer la petición.
+     */
     fun applyQueries(): HashMap<String, String> {
         val queries: HashMap<String, String> = HashMap()
-
-        /**launcha coroutine to collect the values from that particular flow. The flow is the comunication or read action with
-         * the datasource
-         * el colelct te recoge este dato del flow que es un MealAndDietType*/
+        /**Mediante una corrutina, recoelctamos los datos flow que provienen del DataStore.
+         * value es de tipo  MealAndDietType
+         * Hasta que no se coleccionan los datos no se vuelve a emitir uno. Es decir el flow se
+         * queda suspendido esperando a que su dato emitido en la clase DataStore sea coleecioando*/
         viewModelScope.launch {
             readMealAndDietType.collect { value ->
-                /**Hasta que no se coleccionan los datos no se vuelve a emitir uno. Es decir el flow se queda suspendido epseranod a que su dato emitido sea coleecioando*/
-                //now store the value in both up variables
-                //esta d variabels van a toamr el valor de la datastore preference repo directametne
-                //y ahora vamos a coger y usar esas variables en el hasmap del query
+
+                //almacenamos los valores del tipo de comida y dieta seleccionados en el bottomsheet
+                //en las variables globales.
+                //Estas se utilizarán en las queries.
                 mealType = value.selectedMealType
                 dietType = value.selectedDietType
 
             }
 
         }
-
-
-        //asociate the [key] with its value // all of them are in the query string http...
+        //asociamos la clave con su valor y montamos la query.
         queries[QUERY_NUMBER] =
-            DEFAULT_RECIPES_NUMBER  //this is the number of recipes we will get from the request
+            DEFAULT_RECIPES_NUMBER
         queries[QUERY_API_KEY] = API_KEY
-        //her ewe will get the new values for the endpoints and if there is no data inside that variable we will perform a default value because we specicy it in the .map inside the datastore rEPOSITORY
         queries[QUERY_TYPE] = mealType
         queries[QUERY_DIET] = dietType
         queries[QUERY_ADD_RECIPE_INFORMATION] = "true"
@@ -127,6 +141,12 @@ class RecipesViewModel @ViewModelInject constructor(
         return queries
     }
 
+    /**
+     * Función que forma la query a partir del id de una receta. Se utiliza corrutinas para
+     * recolectar los datos referentes a lla selección de los ingredientes.
+     * Cuando se selecciona un ingrediente, se almacena la selección y aqui recolectamos ese dato.
+     * @return ---> devolvemos la query basada en el id de una receta.
+     */
     fun applyQueryById(): HashMap<String, String>{
         val queries: HashMap<String, String> = HashMap()
         viewModelScope.launch {
@@ -139,13 +159,16 @@ class RecipesViewModel @ViewModelInject constructor(
         }
         queries["includeNutrition"] = "false"
         queries[QUERY_API_KEY] = API_KEY
-
         return queries
 
-//       val  searchByIdQuery = "${recipeId}/information?includeNutrition=false&apiKey=${API_KEY}"
-//        return searchByIdQuery
     }
 
+    /**
+     * Función que monta la query utilizando un string proveniente del cuadro de búsqueda.
+     * Aqui no usamos mealtype ni nada, porque queremos que sea un resultado mas general
+     * es decir todas als recetas que tengan un elemento que nosotors escribimos.
+     * @return ---> devolvemos la query montada.
+     */
     fun applySearchQuery(searchQuery: String): HashMap<String, String> {
         val queries: HashMap<String, String> = HashMap()
         //specifie each and every query
@@ -155,15 +178,11 @@ class RecipesViewModel @ViewModelInject constructor(
         queries[QUERY_ADD_RECIPE_INFORMATION] = "true"
         queries[QUERY_FILL_INGREDIENTS] = "true"
         return queries
-        /**
-         * Aqui no usamos mealtype ni nada, pq quermeos que sea un resultado mas general
-         * es decir todas als recetas que tengan un elemento que nosotors escribimos.
-         */
-
-
     }
-
-    /**Query para hacer la búsqueda personalizada*/
+    /**Función para montar la query con los ingredientes que selecciona el usuario
+     * Por defecto se ponene los tipos de comida nada. De modo que si todos los campos
+     * contienen nada selecionado, se efectúa una petición estándar.
+     * @return ---> devolvemos la query*/
     fun applyPersonalizedRecipeQuery(): HashMap<String, String> {
         val query: HashMap<String, String> = HashMap()
 
@@ -178,8 +197,6 @@ class RecipesViewModel @ViewModelInject constructor(
 
             }
         }
-
-
         var parameter: String = "${meatType},+${vegetablType},+${fishType}"
 
         query[Constants.QUERY_INGREDIENTS] = parameter
@@ -190,13 +207,16 @@ class RecipesViewModel @ViewModelInject constructor(
 
         return query
     }
-
     /**
-     * Netwirk --->
-     * here we want to check if the value of our networksatatus if it is
-     * then display a a toasmessge seing no intenet coneection
+     * Función que comprueba el estado de red y muestra un mensaje en caso de que no haya
+     * conexión. Pero si hubo algún momento en el que no hubo conexión y volvemos a tenerla
+     * mostramos el mensaje correspondiente.
+     * En función del estado de red, guardaremos un valor u otro en DataStore.
+     * Si resulta que no tenemos red, guardaremos true para el estado de red. Es decir: "no tenemos
+     * red por tnato guardamos backonline a true porque cuadno volvamos a tener red volveremos a estar
+     * conectados a internet."
+     * Por otro lado cuadno tengamos red, volvemos a poner backonline a false.
      */
-
     fun showNetworkStatus() {
         if (!networkStatus) {
             Toast.makeText(getApplication(), "No internet Connection.", Toast.LENGTH_SHORT).show()

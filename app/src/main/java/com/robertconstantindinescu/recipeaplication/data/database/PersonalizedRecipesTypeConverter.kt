@@ -7,10 +7,11 @@ import com.robertconstantindinescu.recipeaplication.models.FoodRecipe
 import com.robertconstantindinescu.recipeaplication.models.Result
 import com.robertconstantindinescu.recipeaplication.models.foodrecipepersonalized.PersonalizedFoodRecipe
 
+
 /**
- * we wil have 2 funcitons. 1 wich will convert the recipe to string and the second
- * wichc will convert the string from the database in foodRecipe Object for use it
+ * Idéntico al explicado para RecupesTypeConverter.
  */
+
 class PersonalizedRecipesTypeConverter {
 
     var gson = Gson()
@@ -31,16 +32,4 @@ class PersonalizedRecipesTypeConverter {
     }
 
 
-//    /**
-//     * 19---ROOM FAVORITES
-//     */
-//    @TypeConverter
-//    fun resultToString(result: Result): String{
-//        return gson.toJson(result)
-//    }
-//    @TypeConverter
-//    fun stringToResult(data: String): Result {
-//        val listType = object : TypeToken<Result>() {}.type
-//        return gson.fromJson(data, listType)
-//    }
 }

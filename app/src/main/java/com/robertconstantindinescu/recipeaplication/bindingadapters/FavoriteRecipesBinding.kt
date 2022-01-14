@@ -18,15 +18,22 @@ class FavoriteRecipesBinding {
          *
          * viewVisibility refers to the favoritesEnttiry
          * setData to adapter*/
+
+        /**
+         * Este método usa tres parametros. Una vista general, una lista de objetos FavoritesEntity
+         * y un adaptador.
+         * De modo que cuando la lista  esté vacía mostraremos las imagenes y el texto de fondo y
+         * ocultamos el recylcer. En caso contrario, escondemos esa imagen y texto de fondo y setemos
+         *
+         * los datos de esa lista al adaptador.
+         */
         @BindingAdapter("viewVisibility", "setData", requireAll = false) //no se requieren ambos datos para desencadenar la funcoin
         @JvmStatic
         fun setDataAndViewVisibility(
-            view: View, //that means that this binding adapater wil be used in different viewws
+            view: View,
             favoritesEntity: List<FavoritesEntity>?,
             mapAdapter: FavoriteRecipesAdapter?
         ){
-            //check if the recipesFav table is empty and if there is that menasn tath we want to show
-            //the background images and set the visitibily of the recyclar to invisible
             if (favoritesEntity.isNullOrEmpty()){
                 when(view){
                     is ImageView -> {view.visibility = View.VISIBLE}
