@@ -38,7 +38,7 @@ interface RecipesDao { //that need a database in which can operate
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFavoriteRecipe(favoritesEntity: FavoritesEntity)
 
-    @Query("SELECT * FROM favorite_recipes_table ORDER BY id ASC")
+    @Query("SELECT * FROM favorite_recipes_table ORDER BY id DESC")
     fun readFavoriteRecipes(): Flow<List<FavoritesEntity>>
 
     /**
@@ -58,5 +58,14 @@ interface RecipesDao { //that need a database in which can operate
     suspend fun insertPersonalizedRecipe(personalizedRecipeEntity: PersonalizedRecipeEntity)
     @Query("SELECT * FROM personalized_recipes_table ORDER BY id ASC")
     fun readPersonalizedRecipes(): Flow<List<PersonalizedRecipeEntity>>
+
+    @Query("SELECT * FROM favorite_recipes_table ORDER BY name ASC")
+    fun sortByName(): Flow<List<FavoritesEntity>>
+
+    @Query("SELECT * FROM favorite_recipes_table ORDER BY readyInMinutes ASC")
+    fun sortByTimeDuration(): Flow<List<FavoritesEntity>>
+
+    @Query("SELECT * FROM favorite_recipes_table ORDER BY aggregateLikes DESC")
+    fun orderByLikes(): Flow<List<FavoritesEntity>>
 
 }

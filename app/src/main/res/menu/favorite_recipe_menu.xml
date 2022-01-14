@@ -6,4 +6,17 @@
         android:id="@+id/delete_all_favorite_recipes_menu"
         android:title="@string/delete_all"
         app:showAsAction="never"/>
+    <item android:id="@+id/order_alfabetically"
+        android:title="@string/order_alfabetical"
+        app:showAsAction="never"/>
+
+    <item android:id="@+id/order_by_timeDuration"
+        android:title="@string/order_by_time"
+        app:showAsAction="never"/>
+
+    <item android:id="@+id/order_by_likes"
+        android:title="@string/order_by_likes"
+        app:showAsAction="never"/>
+
+
 </menu>

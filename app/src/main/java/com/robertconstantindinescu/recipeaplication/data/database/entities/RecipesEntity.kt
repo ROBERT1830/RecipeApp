@@ -15,4 +15,5 @@ class RecipesEntity(var foodRecipe: FoodRecipe) {
     //autoGenerate = false porque queremos tener una única columna con los datos actulizados.
     @PrimaryKey(autoGenerate = false)
     var id: Int = 0
+
 }

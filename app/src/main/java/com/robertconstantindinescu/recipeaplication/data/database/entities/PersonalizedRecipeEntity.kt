@@ -14,4 +14,5 @@ class PersonalizedRecipeEntity(var personalizedRecipe: PersonalizedFoodRecipe) {
     @PrimaryKey(autoGenerate = false)
     var id: Int = 0
 
+
 }

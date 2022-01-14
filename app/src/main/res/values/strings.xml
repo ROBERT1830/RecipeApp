@@ -82,5 +82,8 @@
     <string name="nofish">Nothing</string>
     <string name="nothing">Nothing</string>
     <string name="personalized_recipe">Custom Recipe</string>
+    <string name="order_alfabetical">Order by name</string>
+    <string name="order_by_time">Order by duration</string>
+    <string name="order_by_likes">Order by likes</string>
 
 </resources>

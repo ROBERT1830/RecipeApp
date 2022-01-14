@@ -184,7 +184,11 @@ class DetailsActivity : AppCompatActivity() {
     private fun saveToFavorites(item: MenuItem) {
         val favoritesEntity = FavoritesEntity(
             0,
-            args.result
+            args.result,
+            args.result.title!!,
+            args.result.readyInMinutes!!,
+            args.result.aggregateLikes!!
+
         )
         mainViewModel.insertFavoriteRecipe(favoritesEntity)
         changeMenuItemColor(item, R.color.yellow)
@@ -203,7 +207,10 @@ class DetailsActivity : AppCompatActivity() {
         //create the objet of the recipe to be removed
         val favoritesEntity = FavoritesEntity(
             savedRecipeId,
-            args.result
+            args.result,
+            args.result.title!!,
+            args.result.readyInMinutes!!,
+            args.result.aggregateLikes!!
         )
         mainViewModel.deleteFavoriteRecipe(favoritesEntity)
         changeMenuItemColor(item, R.color.white)

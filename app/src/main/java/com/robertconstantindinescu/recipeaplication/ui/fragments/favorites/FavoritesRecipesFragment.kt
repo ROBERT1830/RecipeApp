@@ -6,6 +6,7 @@ import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
@@ -16,6 +17,9 @@ import com.robertconstantindinescu.recipeaplication.databinding.FragmentFavorite
 import com.robertconstantindinescu.recipeaplication.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_favorites_recipes.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class FavoritesRecipesFragment : Fragment() {
@@ -83,6 +87,38 @@ class FavoritesRecipesFragment : Fragment() {
      * método para determinar la selección del icono y ejecutar su acción de eliminar.
      */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId){
+             R.id.delete_all_favorite_recipes_menu -> {
+                 mainViewModel.deleteAllFavoriteRecipes()
+                 showSnackbar()
+             }
+            R.id.order_alfabetically -> {
+                lifecycleScope.launch(Dispatchers.Main) {
+                    mainViewModel.sortByName().collect {
+                        mAdapter.setData(it)
+
+                    }
+                }
+            }
+            R.id.order_by_timeDuration -> {
+                lifecycleScope.launch(Dispatchers.Main) {
+                    mainViewModel.sortByTimeDuration().collect {
+                        mAdapter.setData(it)
+
+                    }
+                }
+            }
+            R.id.order_by_likes -> {
+                lifecycleScope.launch(Dispatchers.Main) {
+                    mainViewModel.orderByLikes().collect {
+                        mAdapter.setData(it)
+
+                    }
+                }
+            }
+        }
+
+
         if (item.itemId == R.id.delete_all_favorite_recipes_menu){
             mainViewModel.deleteAllFavoriteRecipes()
             showSnackbar()

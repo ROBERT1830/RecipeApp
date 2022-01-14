@@ -12,5 +12,8 @@ import com.robertconstantindinescu.recipeaplication.util.Constants.Companion.FAV
 class FavoritesEntity (
     @PrimaryKey(autoGenerate = true)
     var id: Int,
-    var result: Result
+    var result: Result,
+    var name: String,
+    var readyInMinutes: Int,
+    var aggregateLikes: Int
 )

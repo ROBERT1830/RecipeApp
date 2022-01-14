@@ -60,4 +60,13 @@ class LocalDataSource @Inject constructor(
     suspend fun deleteAllFavoriteRecipes(){
         recipesDao.deleteAllFavoriteRecipes()
     }
+
+    fun sortByName():Flow<List<FavoritesEntity>> =
+          recipesDao.sortByName()
+
+    fun sortByTimeDuration(): Flow<List<FavoritesEntity>> = recipesDao.sortByTimeDuration()
+    fun orderByLikes(): Flow<List<FavoritesEntity>> = recipesDao.orderByLikes()
+
+
+
 }
